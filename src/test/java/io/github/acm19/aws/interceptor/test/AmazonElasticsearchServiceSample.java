@@ -1,3 +1,5 @@
+package io.github.acm19.aws.interceptor.test;
+
 /*
  * Copyright 2012-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -12,7 +14,6 @@
  */
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-
 import java.io.IOException;
 
 /**
@@ -21,12 +22,10 @@ import java.io.IOException;
  * <p>Example usage with the Elasticsearch low-level REST client:</p>
  * <pre>
  * String serviceName = "es";
- * AWS4Signer signer = new AWS4Signer();
- * signer.setServiceName(serviceName);
- * signer.setRegionName("us-east-1");
+ * Aws4Signer signer = Aws4Signer.create();
  *
  * HttpRequestInterceptor interceptor =
- *     new AWSRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider);
+ *     new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, "us-east-1");
  *
  * return RestClient
  *     .builder(HttpHost.create("https://search-my-es-endpoint-gjhfgfhgfhg.us-east-1.amazonaws.com"))
@@ -36,13 +35,11 @@ import java.io.IOException;
  * <p>Example usage with the Elasticsearch high-level REST client:</p>
  * <pre>
  * String serviceName = "es";
- * AWS4Signer signer = new AWS4Signer();
- * signer.setServiceName(serviceName);
- * signer.setRegionName("us-east-1");
+ * Aws4Signer signer = Aws4Signer.create();
  *
  * HttpRequestInterceptor interceptor =
- *     new AWSRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider);
- * 
+ *     new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, "us-east-1");
+ *
  * return new RestHighLevelClient(RestClient
  *     .builder(HttpHost.create("https://search-my-es-endpoint-gjhfgfhgfhg.us-east-1.amazonaws.com"))
  *     .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));

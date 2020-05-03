@@ -10,8 +10,9 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-import org.apache.http.client.methods.HttpGet;
+package io.github.acm19.aws.interceptor.test;
 
+import org.apache.http.client.methods.HttpGet;
 import java.io.IOException;
 
 public class APIGatewaySample extends Sample {

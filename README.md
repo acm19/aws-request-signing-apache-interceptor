@@ -12,15 +12,15 @@ This library is licensed under the Apache 2.0 License.
 
 ## Usage
 ```java
-Aws4Signer signer = new Aws4Signer();
+Aws4Signer signer = Aws4Signer.create();
 
-HttpRequestInterceptor interceptor = new AWSRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, AWS_REGION);
+HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, AWS_REGION);
 
 HttpClients.custom()
-    .addInterceptorLast(interceptor)
-    .build();
+        .addInterceptorLast(interceptor)
+        .build();
 ```
 
 ## Examples
 
-See examples directory for a few valid requests.
+See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for a few valid requests.

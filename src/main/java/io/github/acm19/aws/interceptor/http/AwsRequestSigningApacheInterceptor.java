@@ -10,7 +10,7 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.http;
+package io.github.acm19.aws.interceptor.http;
 
 import static org.apache.http.protocol.HttpCoreContext.HTTP_TARGET_HOST;
 

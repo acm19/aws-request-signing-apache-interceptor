@@ -10,11 +10,17 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-import com.amazonaws.auth.AWS4Signer;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
+package io.github.acm19.aws.interceptor.test;
+
+import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.NameValuePair;
@@ -27,19 +33,13 @@ import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.signer.Aws4Signer;
 
 class Sample {
     static final String AWS_REGION = "us-east-1";
-    static final AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
+    static final AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
 
     public static void main(String[] args) throws IOException {
         Sample sampleClass = new Sample();
@@ -82,11 +82,9 @@ class Sample {
     }
 
     CloseableHttpClient signingClientForServiceName(String serviceName) {
-        AWS4Signer signer = new AWS4Signer();
-        signer.setServiceName(serviceName);
-        signer.setRegionName(AWS_REGION);
+        Aws4Signer signer = Aws4Signer.create();
 
-        HttpRequestInterceptor interceptor = new AWSRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider);
+        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, AWS_REGION);
         return HttpClients.custom()
                 .addInterceptorLast(interceptor)
                 .build();
