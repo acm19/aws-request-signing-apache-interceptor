@@ -184,7 +184,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
     }
 
     /**
-     * @param headers modeled Header objects
+     * @param headers modelled Header objects
      * @return a Map of header entries
      */
     private static Map<String, List<String>> headerArrayToMap(final Header[] headers) {
@@ -211,7 +211,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
 
     /**
      * @param mapHeaders Map of header entries
-     * @return modeled Header objects
+     * @return modelled Header objects
      */
     private static Header[] mapToHeaderArray(final Map<String, List<String>> mapHeaders) {
         Header[] headers = new Header[mapHeaders.size()];
