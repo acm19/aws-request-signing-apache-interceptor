@@ -1,5 +1,8 @@
 name: Execute Java tests
-on: [push]
+on:
+  push:
+  pull_request:
+      types: [opened, reopened]
 jobs:
   test:
     runs-on: ubuntu-latest
