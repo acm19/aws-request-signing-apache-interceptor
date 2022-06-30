@@ -24,9 +24,9 @@ import org.apache.http.message.BasicNameValuePair;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.regions.Region;
 
 class Sample {
-    static final String AWS_REGION = "us-east-1";
     static final AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
 
     public static void main(String[] args) throws IOException {
@@ -37,7 +37,7 @@ class Sample {
 
     private void makeGetRequest() throws IOException {
         HttpGet httpGet = new HttpGet("http://targethost/homepage");
-        logRequest("", httpGet);
+        logRequest("", Region.US_EAST_1, httpGet);
     }
 
     private void makePostRequest() throws IOException {
@@ -46,14 +46,14 @@ class Sample {
         nvps.add(new BasicNameValuePair("username", "vip"));
         nvps.add(new BasicNameValuePair("password", "secret"));
         httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-        logRequest("", httpPost);
+        logRequest("", Region.US_EAST_1, httpPost);
     }
 
-    void logRequest(String serviceName, HttpUriRequest request) throws IOException {
+    void logRequest(String serviceName, Region region, HttpUriRequest request) throws IOException {
         System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-        CloseableHttpClient httpClient = signingClientForServiceName(serviceName);
+        CloseableHttpClient httpClient = signingClientForServiceName(serviceName, region);
         try (CloseableHttpResponse response = httpClient.execute(request)) {
             System.out.println(response.getStatusLine());
             String inputLine ;
@@ -69,10 +69,10 @@ class Sample {
         }
     }
 
-    CloseableHttpClient signingClientForServiceName(String serviceName) {
+    CloseableHttpClient signingClientForServiceName(String serviceName, Region region) {
         Aws4Signer signer = Aws4Signer.create();
 
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, AWS_REGION);
+        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, region);
         return HttpClients.custom()
                 .addInterceptorLast(interceptor)
                 .build();

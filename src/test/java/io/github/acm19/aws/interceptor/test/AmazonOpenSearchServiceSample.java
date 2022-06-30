@@ -2,12 +2,15 @@ package io.github.acm19.aws.interceptor.test;
 
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+
+import software.amazon.awssdk.regions.Region;
+
 import java.io.IOException;
 
 /**
- * <p>An AWS Request Signing Interceptor sample for arbitrary HTTP requests to an Amazon Elasticsearch Service domain.</p>
- * <p>The interceptor can also be used with the Elasticsearch REST clients for additional convenience and serialization.</p>
- * <p>Example usage with the Elasticsearch low-level REST client:</p>
+ * <p>An AWS Request Signing Interceptor sample for arbitrary HTTP requests to an Amazon OpenSearch Service domain.</p>
+ * <p>The interceptor can also be used with the OpenSearch REST clients for additional convenience and serialization.</p>
+ * <p>Example usage with the OpenSearch low-level REST client:</p>
  * <pre>
  * String serviceName = "es";
  * Aws4Signer signer = Aws4Signer.create();
@@ -20,7 +23,7 @@ import java.io.IOException;
  *     .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor))
  *     .build();
  * </pre>
- * <p>Example usage with the Elasticsearch high-level REST client:</p>
+ * <p>Example usage with the OpenSearch high-level REST client:</p>
  * <pre>
  * String serviceName = "es";
  * Aws4Signer signer = Aws4Signer.create();
@@ -33,24 +36,26 @@ import java.io.IOException;
  *     .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
  * </pre>
  */
-public class AmazonElasticsearchServiceSample extends Sample {
-    private static final String AES_ENDPOINT = "https://search-my-es-endpoint-gjhfgfhgfhg.us-east-1.amazonaws.com";
+public class AmazonOpenSearchServiceSample extends Sample {
+    private static final String ENDPOINT = "https://search-dblock-test-opensearch-21-tu5gqrjd4vg4qazjsu6bps5zsy.us-west-2.es.amazonaws.com";
+    private static final Region REGION = Region.US_WEST_2;
+
     public static void main(String[] args) throws IOException {
-        AmazonElasticsearchServiceSample aesSample = new AmazonElasticsearchServiceSample();
-        aesSample.makeAESRequest();
-        aesSample.indexDocument();
+        AmazonOpenSearchServiceSample sample = new AmazonOpenSearchServiceSample();
+        sample.makeAESRequest();
+        sample.indexDocument();
     }
 
     private void makeAESRequest() throws IOException {
-        HttpGet httpGet = new HttpGet(AES_ENDPOINT);
-        logRequest("es", httpGet);
+        HttpGet httpGet = new HttpGet(ENDPOINT);
+        logRequest("es", REGION, httpGet);
     }
 
     private void indexDocument() throws IOException {
         String payload = "{\"test\": \"val\"}";
-        HttpPost httpPost = new HttpPost(AES_ENDPOINT + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(ENDPOINT + "/index_name/type_name/document_id");
         httpPost.setEntity(stringEntity(payload));
         httpPost.addHeader("Content-Type", "application/json");
-        logRequest("es", httpPost);
+        logRequest("es", REGION, httpPost);
     }
 }
