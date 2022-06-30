@@ -1,0 +1,43 @@
+name: Release to Maven Staging
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build project and publish release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+        server-id: ossrh-release
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+    - name: Extract project version
+      id: project
+      run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - name: Publish to Maven central
+      if: ${{ !endsWith(steps.project.outputs.version, '-SNAPSHOT') }}
+      run: mvn deploy --file pom.xml
+      env:
+        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.project.outputs.version }}
+        release_name: ${{ steps.project.outputs.version }}
+        draft: false
+        prerelease: false
