@@ -41,7 +41,12 @@ public static void main(String[] args) throws ClientProtocolException, IOExcepti
         CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
         System.out.println(httpResponse.getStatusLine());
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent()));
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(
+                        httpResponse.getEntity().getContent()
+                )
+        );
+
         String inputLine;
         StringBuffer response = new StringBuffer();
         while ((inputLine = reader.readLine()) != null) {
