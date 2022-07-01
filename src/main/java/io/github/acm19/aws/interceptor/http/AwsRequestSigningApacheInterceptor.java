@@ -98,7 +98,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
         try {
             uriBuilder = new URIBuilder(request.getRequestLine().getUri());
         } catch (URISyntaxException e) {
-            throw new IOException("Invalid URI" , e);
+            throw new IOException("Invalid URI", e);
         }
 
         // Copy Apache HttpRequest to AWS Request
@@ -140,7 +140,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
         }
     }
 
-    private URI buildUri(final HttpContext context, URIBuilder uriBuilder) throws IOException {
+    private URI buildUri(final HttpContext context, final URIBuilder uriBuilder) throws IOException {
         try {
             HttpHost host = (HttpHost) context.getAttribute(HTTP_TARGET_HOST);
 
