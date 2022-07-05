@@ -2,8 +2,9 @@ package io.github.acm19.aws.interceptor.http;
 
 import static org.apache.http.protocol.HttpCoreContext.HTTP_TARGET_HOST;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -33,7 +34,8 @@ import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 
 /**
- * An {@link HttpRequestInterceptor} that signs requests using any AWS {@link Signer}
+ * An {@link HttpRequestInterceptor} that signs requests using any AWS
+ * {@link Signer}
  * and {@link AwsCredentialsProvider}.
  */
 public class AwsRequestSigningApacheInterceptor implements HttpRequestInterceptor {
@@ -59,15 +61,15 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
 
     /**
      *
-     * @param service service that we're connecting to
-     * @param signer particular signer implementation
+     * @param service                service that we're connecting to
+     * @param signer                 particular signer implementation
      * @param awsCredentialsProvider source of AWS credentials for signing
-     * @param region signing region
+     * @param region                 signing region
      */
     public AwsRequestSigningApacheInterceptor(final String service,
-                                              final Signer signer,
-                                              final AwsCredentialsProvider awsCredentialsProvider,
-                                              final Region region) {
+            final Signer signer,
+            final AwsCredentialsProvider awsCredentialsProvider,
+            final Region region) {
         this.service = service;
         this.signer = signer;
         this.awsCredentialsProvider = awsCredentialsProvider;
@@ -76,15 +78,15 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
 
     /**
      *
-     * @param service service that we're connecting to
-     * @param signer particular signer implementation
+     * @param service                service that we're connecting to
+     * @param signer                 particular signer implementation
      * @param awsCredentialsProvider source of AWS credentials for signing
-     * @param region signing region
+     * @param region                 signing region
      */
     public AwsRequestSigningApacheInterceptor(final String service,
-                                              final Signer signer,
-                                              final AwsCredentialsProvider awsCredentialsProvider,
-                                              final String region) {
+            final Signer signer,
+            final AwsCredentialsProvider awsCredentialsProvider,
+            final String region) {
         this(service, signer, awsCredentialsProvider, Region.of(region));
     }
 
@@ -107,18 +109,19 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
                 .uri(buildUri(context, uriBuilder));
 
         if (request instanceof HttpEntityEnclosingRequest) {
-            HttpEntityEnclosingRequest httpEntityEnclosingRequest =
-                    (HttpEntityEnclosingRequest) request;
+            HttpEntityEnclosingRequest httpEntityEnclosingRequest = (HttpEntityEnclosingRequest) request;
             if (httpEntityEnclosingRequest.getEntity() != null) {
-                InputStream content = httpEntityEnclosingRequest.getEntity().getContent();
-                requestBuilder.contentStreamProvider(() -> content);
+                final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                httpEntityEnclosingRequest.getEntity().writeTo(outputStream);
+                requestBuilder.contentStreamProvider(() -> new ByteArrayInputStream(outputStream.toByteArray()));
             }
         }
         requestBuilder.rawQueryParameters(nvpToMapParams(uriBuilder.getQueryParams()));
         requestBuilder.headers(headerArrayToMap(request.getAllHeaders()));
 
         ExecutionAttributes attributes = new ExecutionAttributes();
-        attributes.putAttribute(AwsSignerExecutionAttribute.AWS_CREDENTIALS, awsCredentialsProvider.resolveCredentials());
+        attributes.putAttribute(AwsSignerExecutionAttribute.AWS_CREDENTIALS,
+                awsCredentialsProvider.resolveCredentials());
         attributes.putAttribute(AwsSignerExecutionAttribute.SERVICE_SIGNING_NAME, service);
         attributes.putAttribute(AwsSignerExecutionAttribute.SIGNING_REGION, region);
 
@@ -127,9 +130,9 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
 
         // Now copy everything back
         request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+
         if (request instanceof HttpEntityEnclosingRequest) {
-            HttpEntityEnclosingRequest httpEntityEnclosingRequest =
-                    (HttpEntityEnclosingRequest) request;
+            HttpEntityEnclosingRequest httpEntityEnclosingRequest = (HttpEntityEnclosingRequest) request;
             if (httpEntityEnclosingRequest.getEntity() != null) {
                 BasicHttpEntity basicHttpEntity = new BasicHttpEntity();
                 basicHttpEntity.setContent(signedRequest.contentStreamProvider()
@@ -164,8 +167,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
     private static Map<String, List<String>> nvpToMapParams(final List<NameValuePair> params) {
         Map<String, List<String>> parameterMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (NameValuePair nvp : params) {
-            List<String> argsList =
-                    parameterMap.computeIfAbsent(nvp.getName(), k -> new ArrayList<>());
+            List<String> argsList = parameterMap.computeIfAbsent(nvp.getName(), k -> new ArrayList<>());
             argsList.add(nvp.getValue());
         }
         return parameterMap;

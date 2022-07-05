@@ -1,15 +1,11 @@
 package io.github.acm19.aws.interceptor.test;
 
-import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.http.HttpEntity;
+
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -17,10 +13,11 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+
+import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
@@ -50,13 +47,13 @@ class Sample {
     }
 
     void logRequest(String serviceName, Region region, HttpUriRequest request) throws IOException {
-        System.setProperty("org.apache.commons.logging.Log","org.apache.commons.logging.impl.SimpleLog");
+        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
         CloseableHttpClient httpClient = signingClientForServiceName(serviceName, region);
         try (CloseableHttpResponse response = httpClient.execute(request)) {
             System.out.println(response.getStatusLine());
-            String inputLine ;
+            String inputLine;
             BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             try {
                 while ((inputLine = br.readLine()) != null) {
@@ -66,21 +63,23 @@ class Sample {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            switch (response.getStatusLine().getStatusCode()) {
+                case 200:
+                case 201:
+                    break;
+                default:
+                    throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+            }
         }
     }
 
     CloseableHttpClient signingClientForServiceName(String serviceName, Region region) {
         Aws4Signer signer = Aws4Signer.create();
 
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, region);
+        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer,
+                credentialsProvider, region);
         return HttpClients.custom()
                 .addInterceptorLast(interceptor)
                 .build();
-    }
-
-    HttpEntity stringEntity(final String body) throws UnsupportedEncodingException {
-        BasicHttpEntity httpEntity = new BasicHttpEntity();
-        httpEntity.setContent(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8.name())));
-        return httpEntity;
     }
 }
