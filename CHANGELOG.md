@@ -1,5 +1,6 @@
 ### 2.0.3 (Next)
 
+* [#32](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/32): Added CI status badge - [@dblock](https://github.com/dblock).
 * [#28](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/28): Run tests on push and pull - [@dblock](https://github.com/dblock).
 * [#25](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/25): Added CHANGELOG - [@dblock](https://github.com/dblock).
 * [#24](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/24): Added checkstyle - [@dblock](https://github.com/dblock).

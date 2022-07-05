@@ -1,5 +1,7 @@
 # AWS Request Signing Interceptor
 
+[![tests](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/test.yml/badge.svg)](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/test.yml)
+
 An AWS request signing interceptor for arbitrary HTTP requests.
 
 This library enables you to sign requests to any service that leverages SigV4, and thus access any AWS Service or APIGW backed service.
