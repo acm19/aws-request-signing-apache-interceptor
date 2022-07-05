@@ -3,12 +3,16 @@ package io.github.acm19.aws.interceptor.test;
 import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.http.HttpEntity;
+import java.util.zip.GZIPOutputStream;
+
+import org.apache.commons.codec.binary.StringUtils;
+import org.apache.http.HttpException;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -17,6 +21,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -65,6 +71,13 @@ class Sample {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            switch(response.getStatusLine().getStatusCode()) {
+                case 200:
+                case 201:
+                    break;
+                default:
+                    throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+            }
         }
     }
 
@@ -77,12 +90,22 @@ class Sample {
                 .build();
     }
 
-    HttpEntity stringEntity(final String body) throws UnsupportedEncodingException {
+    BasicHttpEntity stringEntity(final String body) throws UnsupportedEncodingException {
         BasicHttpEntity httpEntity = new BasicHttpEntity();
         httpEntity.setContentType("text/html; charset=UTF-8");
-        final byte[] bodyData = body.getBytes();
+        final byte[] bodyData = StringUtils.getBytesUtf8(body);
         httpEntity.setContent(new ByteArrayInputStream(bodyData));
         httpEntity.setContentLength(bodyData.length);
         return httpEntity;
+    }
+
+    ByteArrayEntity gzipEntity(final String body) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
+        gzipOutputStream.write(body.getBytes("UTF-8"));
+        gzipOutputStream.close();
+        ByteArrayEntity entity = new ByteArrayEntity(outputStream.toByteArray(), ContentType.DEFAULT_BINARY);
+        entity.setContentEncoding("gzip");
+        return entity;
     }
 }

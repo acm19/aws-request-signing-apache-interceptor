@@ -1,16 +1,14 @@
 package io.github.acm19.aws.interceptor.test;
 
+import java.io.IOException;
+
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
 
 import software.amazon.awssdk.regions.Region;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * <p>
@@ -62,6 +60,9 @@ public class AmazonOpenSearchServiceSample extends Sample {
         sample.makeRequest();
         sample.indexDocument();
         sample.indexDocumentWithCompressionEnabled();
+        // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/20
+        // sample.indexDocumentWithChunkedTransferEncoding();
+        // sample.indexDocumentWithChunkedTransferEncodingCompressionEnabled();
     }
 
     private void makeRequest() throws IOException {
@@ -77,20 +78,34 @@ public class AmazonOpenSearchServiceSample extends Sample {
         logRequest("es", REGION, httpPost);
     }
 
-    private void indexDocumentWithCompressionEnabled() throws IOException {
+    private void indexDocumentWithChunkedTransferEncoding() throws IOException {
         String payload = "{\"test\": \"val\"}";
         HttpPost httpPost = new HttpPost(ENDPOINT + "/index_name/type_name/document_id");
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
-        gzipOutputStream.write(payload.getBytes("UTF-8"));
-        gzipOutputStream.close();
-        ByteArrayEntity entity = new ByteArrayEntity(
-                outputStream.toByteArray(),
-                ContentType.DEFAULT_BINARY);
-        entity.setContentEncoding("gzip");
-        httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+        BasicHttpEntity entity = stringEntity(payload);
+        entity.setChunked(true);
+        entity.setContentLength(-1L);
         httpPost.setEntity(entity);
         httpPost.addHeader("Content-Type", "application/json");
+        logRequest("es", REGION, httpPost);
+    }
+
+    private void indexDocumentWithCompressionEnabled() throws IOException {
+        HttpPost httpPost = new HttpPost(ENDPOINT + "/index_name/type_name/document_id");
+        httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+        httpPost.addHeader("Content-Type", "application/json");
+        String payload = "{\"test\": \"val\"}";
+        httpPost.setEntity(gzipEntity(payload));
+        logRequest("es", REGION, httpPost);
+    }
+
+    private void indexDocumentWithChunkedTransferEncodingCompressionEnabled() throws IOException {
+        HttpPost httpPost = new HttpPost(ENDPOINT + "/index_name/type_name/document_id");
+        httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+        httpPost.addHeader("Content-Type", "application/json");
+        String payload = "{\"test\": \"val\"}";
+        ByteArrayEntity entity = gzipEntity(payload);
+        entity.setChunked(true);
+        httpPost.setEntity(entity);
         logRequest("es", REGION, httpPost);
     }
 }
