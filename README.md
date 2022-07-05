@@ -1,8 +1,10 @@
 # AWS Request Signing Interceptor
 
+[![tests](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/test.yml/badge.svg)](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/test.yml)
+
 An AWS request signing interceptor for arbitrary HTTP requests.
 
-This library enables you to sign requests to any service that leverages SigV4, and thus access any AWS Service or APIGW backed service.
+This library enables you to sign requests to any service that leverages SigV4, and thus access any AWS Service or APIG-backed service.
 
 This library is based on [AWS Interceptor](https://github.com/awslabs/aws-request-signing-apache-interceptor), but using AWS SDK 2.x.
 
@@ -73,6 +75,14 @@ mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.githu
 
 See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for more valid requests. 
 
+## Contributing 
+
+You're encouraged to contribute to this project. See [CONTRIBUTING](CONTRIBUTING.md) for details.
+
+## Copyright
+
+Copyright 2017 Amazon.com, Inc. or its affiliates. See [NOTICE](NOTICE) for details.
+
 ## License
 
-This library is licensed under the Apache 2.0 License.
+This library is licensed under the [Apache 2.0 License](LICENSE).
