@@ -1,7 +1,6 @@
 package io.github.acm19.aws.interceptor.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
@@ -37,6 +35,7 @@ import software.amazon.awssdk.core.signer.Signer;
 import software.amazon.awssdk.http.ContentStreamProvider;
 import software.amazon.awssdk.http.SdkHttpFullRequest;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.utils.IoUtils;
 
 class AwsRequestSigningApacheInterceptorTest {
     private AwsRequestSigningApacheInterceptor interceptor;
@@ -70,7 +69,7 @@ class AwsRequestSigningApacheInterceptorTest {
     @Test
     void testPostSigner() throws Exception {
         HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
-            new MockRequestLine("POST", "/query?a=b"));
+                new MockRequestLine("POST", "/query?a=b"));
 
         String payload = "{\"test\": \"val\"}";
         BasicHttpEntity httpEntity = new BasicHttpEntity();
@@ -169,32 +168,27 @@ class AwsRequestSigningApacheInterceptorTest {
         @Override
         public SdkHttpFullRequest sign(SdkHttpFullRequest request, ExecutionAttributes ea) {
             SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
-                .uri(request.getUri())
-                .method(request.method())
-                .headers(request.headers())
-                .appendHeader(name, value)
-                .appendHeader("resourcePath", request.getUri().getRawPath());
+                    .uri(request.getUri())
+                    .method(request.method())
+                    .headers(request.headers())
+                    .appendHeader(name, value)
+                    .appendHeader("resourcePath", request.getUri().getRawPath());
 
             if (request.contentStreamProvider().isPresent()) {
                 ContentStreamProvider contentStreamProvider = request.contentStreamProvider().get();
                 requestBuilder.contentStreamProvider(contentStreamProvider);
-                requestBuilder.appendHeader("signedContentLength", Long.toString(getContentLength(contentStreamProvider.newStream())));
+                requestBuilder.appendHeader("signedContentLength",
+                        Long.toString(getContentLength(contentStreamProvider.newStream())));
             }
 
             return requestBuilder.build();
         }
 
-        private static long getContentLength(InputStream content) {
+        private static int getContentLength(InputStream content) {
             try {
-                long contentLength = 0;
-                byte[] tmp = new byte[4096];
-                int read;
-                while ((read = content.read(tmp)) != -1) {
-                    contentLength += read;
-                }
-                return contentLength;
+                return IoUtils.toByteArray(content).length;
             } catch (IOException e) {
-                return -1L;
+                return -1;
             }
         }
     }
