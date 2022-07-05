@@ -2,8 +2,9 @@ package io.github.acm19.aws.interceptor.http;
 
 import static org.apache.http.protocol.HttpCoreContext.HTTP_TARGET_HOST;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -110,8 +111,9 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
             HttpEntityEnclosingRequest httpEntityEnclosingRequest =
                     (HttpEntityEnclosingRequest) request;
             if (httpEntityEnclosingRequest.getEntity() != null) {
-                InputStream content = httpEntityEnclosingRequest.getEntity().getContent();
-                requestBuilder.contentStreamProvider(() -> content);
+                final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                httpEntityEnclosingRequest.getEntity().writeTo(outputStream);
+                requestBuilder.contentStreamProvider(() -> new ByteArrayInputStream(outputStream.toByteArray()));
             }
         }
         requestBuilder.rawQueryParameters(nvpToMapParams(uriBuilder.getQueryParams()));
@@ -127,6 +129,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
 
         // Now copy everything back
         request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+
         if (request instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest httpEntityEnclosingRequest =
                     (HttpEntityEnclosingRequest) request;

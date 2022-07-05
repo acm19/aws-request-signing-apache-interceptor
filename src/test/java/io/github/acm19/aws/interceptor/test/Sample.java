@@ -6,7 +6,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.http.HttpEntity;
@@ -80,7 +79,10 @@ class Sample {
 
     HttpEntity stringEntity(final String body) throws UnsupportedEncodingException {
         BasicHttpEntity httpEntity = new BasicHttpEntity();
-        httpEntity.setContent(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8.name())));
+        httpEntity.setContentType("text/html; charset=UTF-8");
+        final byte[] bodyData = body.getBytes();
+        httpEntity.setContent(new ByteArrayInputStream(bodyData));
+        httpEntity.setContentLength(bodyData.length);
         return httpEntity;
     }
 }
