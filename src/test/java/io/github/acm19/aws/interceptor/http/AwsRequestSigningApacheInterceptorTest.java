@@ -164,7 +164,7 @@ class AwsRequestSigningApacheInterceptorTest {
                 request.getFirstHeader("signedContentLength").getValue());
     }
 
-    private final class AddHeaderSigner implements Signer {
+    private static final class AddHeaderSigner implements Signer {
         private final String name;
         private final String value;
 
@@ -192,7 +192,7 @@ class AwsRequestSigningApacheInterceptorTest {
             return requestBuilder.build();
         }
 
-        private int getContentLength(final InputStream content) {
+        private static int getContentLength(final InputStream content) {
             try {
                 return IoUtils.toByteArray(content).length;
             } catch (IOException e) {
