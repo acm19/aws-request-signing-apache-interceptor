@@ -1,5 +1,6 @@
 ### 2.0.3 (Next)
 
+* [#36](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/36): Added SPDX license headers - [@dblock](https://github.com/dblock).
 * [#31](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/31): Fix signing HTTP POST requests - [@dblock](https://github.com/dblock).
 * [#32](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/32): Added CI status badge - [@dblock](https://github.com/dblock).
 * [#33](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/33): Added CONTRIBUTING.md - [@dblock](https://github.com/dblock).
