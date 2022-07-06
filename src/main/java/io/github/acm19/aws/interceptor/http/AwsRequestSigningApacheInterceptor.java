@@ -8,8 +8,6 @@
 
 package io.github.acm19.aws.interceptor.http;
 
-import static org.apache.http.protocol.HttpCoreContext.HTTP_TARGET_HOST;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
@@ -32,7 +31,10 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpCoreContext;
+
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.signer.AwsSignerExecutionAttribute;
 import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
@@ -163,7 +165,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
      */
     private URI buildUri(final HttpContext context, final URIBuilder uriBuilder) throws IOException {
         try {
-            HttpHost host = (HttpHost) context.getAttribute(HTTP_TARGET_HOST);
+            HttpHost host = (HttpHost) context.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
 
             if (host != null) {
                 uriBuilder.setHost(host.getHostName());
@@ -211,9 +213,9 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
      * @return true if the given header should be excluded when signing
      */
     private static boolean skipHeader(final Header header) {
-        return ("content-length".equalsIgnoreCase(header.getName())
+        return (HTTP.CONTENT_LEN.equalsIgnoreCase(header.getName())
                 && "0".equals(header.getValue())) // Strip Content-Length: 0
-                || "host".equalsIgnoreCase(header.getName()); // Host comes from endpoint
+                || HTTP.TARGET_HOST.equalsIgnoreCase(header.getName()); // Host comes from endpoint
     }
 
     /**
