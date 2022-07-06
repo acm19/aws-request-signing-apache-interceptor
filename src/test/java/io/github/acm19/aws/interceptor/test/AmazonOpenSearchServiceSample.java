@@ -64,14 +64,7 @@ import software.amazon.awssdk.regions.Region;
  * </pre>
  */
 public class AmazonOpenSearchServiceSample extends Sample {
-    /**
-     *
-     */
     private static final String ENDPOINT = "https://search-dblock-test-opensearch-21-tu5gqrjd4vg4qazjsu6bps5zsy.us-west-2.es.amazonaws.com";
-
-    /**
-     *
-     */
     private static final Region REGION = Region.US_WEST_2;
 
     /**

@@ -46,9 +46,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
 class AwsRequestSigningApacheInterceptorTest {
-    /**
-     *
-     */
     private AwsRequestSigningApacheInterceptor interceptor;
 
     @BeforeEach
@@ -167,18 +164,8 @@ class AwsRequestSigningApacheInterceptorTest {
                 request.getFirstHeader("signedContentLength").getValue());
     }
 
-    /**
-     *
-     */
     private final class AddHeaderSigner implements Signer {
-        /**
-         *
-         */
         private final String name;
-
-        /**
-         *
-         */
         private final String value;
 
         private AddHeaderSigner(final String name, final String value) {
@@ -214,18 +201,8 @@ class AwsRequestSigningApacheInterceptorTest {
         }
     }
 
-    /**
-     *
-     */
     private static class MockRequestLine implements RequestLine {
-        /**
-         *
-         */
         private final String uri;
-
-        /**
-         *
-         */
         private final String method;
 
         MockRequestLine(final String uri) {

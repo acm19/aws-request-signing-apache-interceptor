@@ -17,7 +17,7 @@ import software.amazon.awssdk.regions.Region;
 public class APIGatewaySample extends Sample {
     /**
      * The invoke URL for your API which is usually
-     * https://api_id.execute-api.api-region.amazonaws.com/stage
+     * https://api_id.execute-api.api-region.amazonaws.com/stage.
      */
     private static final String INVOKE_URL = "https://api_id.execute-api.api-region.amazonaws.com/stage";
     private static final Region REGION = Region.US_EAST_1;
