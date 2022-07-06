@@ -22,13 +22,18 @@ public class APIGatewaySample extends Sample {
     private static final String INVOKE_URL = "https://api_id.execute-api.api-region.amazonaws.com/stage";
     private static final Region REGION = Region.US_EAST_1;
 
-    public static void main(String[] args) throws IOException {
+    /**
+     *
+     * @param args
+     * @throws IOException
+     */
+    public static void main(final String[] args) throws IOException {
         APIGatewaySample apiGatewaySample = new APIGatewaySample();
         apiGatewaySample.makeAPIGGetRequest();
     }
 
     private void makeAPIGGetRequest() throws IOException {
-        HttpGet Http = new HttpGet(INVOKE_URL + "/some/path?and=param");
-        logRequest("execute-api", REGION, Http);
+        final HttpGet request = new HttpGet(INVOKE_URL + "/some/path?and=param");
+        logRequest("execute-api", REGION, request);
     }
 }

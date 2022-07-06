@@ -16,7 +16,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.BasicHttpEntity;
+// import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -24,23 +24,22 @@ import org.apache.http.entity.StringEntity;
 import software.amazon.awssdk.regions.Region;
 
 /**
- * <p>
  * An AWS Request Signing Interceptor sample for arbitrary HTTP requests to an
  * Amazon OpenSearch Service domain.
- * </p>
- * <p>
- * The interceptor can also be used with the OpenSearch REST clients for
- * additional convenience and serialization.
- * </p>
- * <p>
+ *
+ * In addition to the examples below that use Apache Http, the interceptor can
+ * also be used with the OpenSearch REST clients for additional convenience and
+ * serialization.
+ *
  * Example usage with the OpenSearch low-level REST client:
- * </p>
- * 
+ *
  * <pre>
- * String serviceName = "es";
  * Aws4Signer signer = Aws4Signer.create();
  *
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider,
+ * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ *         "es",
+ *         Aws4Signer.create(),
+ *         DefaultCredentialsProvider.create(),
  *         "us-east-1");
  *
  * return RestClient
@@ -48,27 +47,39 @@ import software.amazon.awssdk.regions.Region;
  *         .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor))
  *         .build();
  * </pre>
- * <p>
- * Example usage with the OpenSearch high-level REST client:
- * </p>
- * 
- * <pre>
- * String serviceName = "es";
- * Aws4Signer signer = Aws4Signer.create();
  *
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider,
+ * Example usage with the OpenSearch high-level REST client:
+ *
+ * <pre>
+ * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ *         "es",
+ *         Aws4Signer.create(),
+ *         DefaultCredentialsProvider.create(),
  *         "us-east-1");
  *
- * return new RestHighLevelClient(RestClient
- *         .builder(HttpHost.create("https://search-my-es-endpoint-gjhfgfhgfhg.us-east-1.amazonaws.com"))
- *         .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
+ * return new RestHighLevelClient(
+ *         RestClient
+ *                 .builder(HttpHost.create("https://search-my-es-endpoint-gjhfgfhgfhg.us-east-1.amazonaws.com"))
+ *                 .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
  * </pre>
  */
 public class AmazonOpenSearchServiceSample extends Sample {
+    /**
+     *
+     */
     private static final String ENDPOINT = "https://search-dblock-test-opensearch-21-tu5gqrjd4vg4qazjsu6bps5zsy.us-west-2.es.amazonaws.com";
+
+    /**
+     *
+     */
     private static final Region REGION = Region.US_WEST_2;
 
-    public static void main(String[] args) throws IOException {
+    /**
+     *
+     * @param args
+     * @throws IOException
+     */
+    public static void main(final String[] args) throws IOException {
         AmazonOpenSearchServiceSample sample = new AmazonOpenSearchServiceSample();
         sample.makeRequest();
         sample.indexDocument();

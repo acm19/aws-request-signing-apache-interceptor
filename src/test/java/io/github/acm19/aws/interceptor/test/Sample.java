@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -26,15 +27,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
 import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
 import software.amazon.awssdk.regions.Region;
 
 class Sample {
-    static final AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
-
-    public static void main(String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException {
         Sample sampleClass = new Sample();
         sampleClass.makeGetRequest();
         sampleClass.makePostRequest();
@@ -54,7 +52,7 @@ class Sample {
         logRequest("", Region.US_EAST_1, httpPost);
     }
 
-    void logRequest(String serviceName, Region region, HttpUriRequest request) throws IOException {
+    void logRequest(final String serviceName, final Region region, final HttpUriRequest request) throws IOException {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
@@ -72,8 +70,8 @@ class Sample {
                 e.printStackTrace();
             }
             switch (response.getStatusLine().getStatusCode()) {
-                case 200:
-                case 201:
+                case HttpStatus.SC_OK:
+                case HttpStatus.SC_CREATED:
                     break;
                 default:
                     throw new RuntimeException(response.getStatusLine().getReasonPhrase());
@@ -81,11 +79,13 @@ class Sample {
         }
     }
 
-    CloseableHttpClient signingClientForServiceName(String serviceName, Region region) {
-        Aws4Signer signer = Aws4Signer.create();
+    CloseableHttpClient signingClientForServiceName(final String serviceName, final Region region) {
+        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+                serviceName,
+                Aws4Signer.create(),
+                DefaultCredentialsProvider.create(),
+                region);
 
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(serviceName, signer,
-                credentialsProvider, region);
         return HttpClients.custom()
                 .addInterceptorLast(interceptor)
                 .build();

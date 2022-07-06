@@ -46,6 +46,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
 class AwsRequestSigningApacheInterceptorTest {
+    /**
+     *
+     */
     private AwsRequestSigningApacheInterceptor interceptor;
 
     @BeforeEach
@@ -164,17 +167,27 @@ class AwsRequestSigningApacheInterceptorTest {
                 request.getFirstHeader("signedContentLength").getValue());
     }
 
-    private static class AddHeaderSigner implements Signer {
+    /**
+     *
+     */
+    private final class AddHeaderSigner implements Signer {
+        /**
+         *
+         */
         private final String name;
+
+        /**
+         *
+         */
         private final String value;
 
-        private AddHeaderSigner(String name, String value) {
+        private AddHeaderSigner(final String name, final String value) {
             this.name = name;
             this.value = value;
         }
 
         @Override
-        public SdkHttpFullRequest sign(SdkHttpFullRequest request, ExecutionAttributes ea) {
+        public SdkHttpFullRequest sign(final SdkHttpFullRequest request, final ExecutionAttributes ea) {
             SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
                     .uri(request.getUri())
                     .method(request.method())
@@ -192,7 +205,7 @@ class AwsRequestSigningApacheInterceptorTest {
             return requestBuilder.build();
         }
 
-        private static int getContentLength(InputStream content) {
+        private int getContentLength(final InputStream content) {
             try {
                 return IoUtils.toByteArray(content).length;
             } catch (IOException e) {
@@ -201,15 +214,25 @@ class AwsRequestSigningApacheInterceptorTest {
         }
     }
 
+    /**
+     *
+     */
     private static class MockRequestLine implements RequestLine {
+        /**
+         *
+         */
         private final String uri;
+
+        /**
+         *
+         */
         private final String method;
 
-        public MockRequestLine(String uri) {
+        MockRequestLine(final String uri) {
             this("POST", uri);
         }
 
-        public MockRequestLine(String method, String uri) {
+        MockRequestLine(final String method, final String uri) {
             this.method = method;
             this.uri = uri;
         }

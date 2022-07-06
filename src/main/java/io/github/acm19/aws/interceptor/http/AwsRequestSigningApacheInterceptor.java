@@ -42,18 +42,18 @@ import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.regions.Region;
 
 /**
- * An {@link HttpRequestInterceptor} that signs requests using any AWS
- * {@link Signer}
- * and {@link AwsCredentialsProvider}.
+ * An {@link HttpRequestInterceptor} that signs requests for any AWS service
+ * running in a specific region using an AWS {@link Signer} and
+ * {@link AwsCredentialsProvider}.
  */
 public class AwsRequestSigningApacheInterceptor implements HttpRequestInterceptor {
     /**
-     * The service that we're connecting to.
+     * A service the client is connecting to.
      */
     private final String service;
 
     /**
-     * The particular signer implementation.
+     * A signer implementation.
      */
     private final Signer signer;
 
@@ -63,18 +63,19 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
     private final AwsCredentialsProvider awsCredentialsProvider;
 
     /**
-     * The region signing region.
+     * The signing region.
      */
     private final Region region;
 
     /**
      *
-     * @param service                service that we're connecting to
-     * @param signer                 particular signer implementation
+     * @param service                service the client is connecting to
+     * @param signer                 signer implementation.
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheInterceptor(final String service,
+    public AwsRequestSigningApacheInterceptor(
+            final String service,
             final Signer signer,
             final AwsCredentialsProvider awsCredentialsProvider,
             final Region region) {
@@ -86,12 +87,13 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
 
     /**
      *
-     * @param service                service that we're connecting to
-     * @param signer                 particular signer implementation
+     * @param service                service the client is connecting to
+     * @param signer                 signer implementation
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheInterceptor(final String service,
+    public AwsRequestSigningApacheInterceptor(
+            final String service,
             final Signer signer,
             final AwsCredentialsProvider awsCredentialsProvider,
             final String region) {
@@ -111,7 +113,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
             throw new IOException("Invalid URI", e);
         }
 
-        // Copy Apache HttpRequest to AWS Request
+        // copy Apache HttpRequest to AWS request
         SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
                 .method(SdkHttpMethod.fromValue(request.getRequestLine().getMethod()))
                 .uri(buildUri(context, uriBuilder));
@@ -133,10 +135,10 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
         attributes.putAttribute(AwsSignerExecutionAttribute.SERVICE_SIGNING_NAME, service);
         attributes.putAttribute(AwsSignerExecutionAttribute.SIGNING_REGION, region);
 
-        // Sign it
+        // sign it
         SdkHttpFullRequest signedRequest = signer.sign(requestBuilder.build(), attributes);
 
-        // Now copy everything back
+        // copy everything back
         request.setHeaders(mapToHeaderArray(signedRequest.headers()));
 
         if (request instanceof HttpEntityEnclosingRequest) {
@@ -151,6 +153,14 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
         }
     }
 
+    /**
+     * Returns an URI from an HTTP context.
+     *
+     * @param context HTTP context
+     * @param uriBuilder URI builder
+     * @return URI
+     * @throws IOException
+     */
     private URI buildUri(final HttpContext context, final URIBuilder uriBuilder) throws IOException {
         try {
             HttpHost host = (HttpHost) context.getAttribute(HTTP_TARGET_HOST);
@@ -168,9 +178,8 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
     }
 
     /**
-     *
      * @param params list of HTTP query params as NameValuePairs
-     * @return a multimap of HTTP query params
+     * @return multimap of HTTP query params
      */
     private static Map<String, List<String>> nvpToMapParams(final List<NameValuePair> params) {
         Map<String, List<String>> parameterMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -182,8 +191,8 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
     }
 
     /**
-     * @param headers modelled Header objects
-     * @return a Map of header entries
+     * @param headers Header objects
+     * @return map of header entries
      */
     private static Map<String, List<String>> headerArrayToMap(final Header[] headers) {
         Map<String, List<String>> headersMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -209,7 +218,7 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
 
     /**
      * @param mapHeaders Map of header entries
-     * @return modelled Header objects
+     * @return Header objects
      */
     private static Header[] mapToHeaderArray(final Map<String, List<String>> mapHeaders) {
         Header[] headers = new Header[mapHeaders.size()];
