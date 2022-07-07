@@ -30,6 +30,7 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
@@ -150,7 +151,8 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
                 basicHttpEntity.setContent(signedRequest.contentStreamProvider()
                         .orElseThrow(() -> new IllegalStateException("There must be content"))
                         .newStream());
-                httpEntityEnclosingRequest.setEntity(basicHttpEntity);
+                // wrap into repeatable entity to support retries
+                httpEntityEnclosingRequest.setEntity(new BufferedHttpEntity(basicHttpEntity));
             }
         }
     }

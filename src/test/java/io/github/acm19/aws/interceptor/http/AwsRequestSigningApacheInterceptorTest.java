@@ -11,6 +11,7 @@ package io.github.acm19.aws.interceptor.http;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -104,6 +105,20 @@ class AwsRequestSigningApacheInterceptorTest {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         request.getEntity().writeTo(outputStream);
         assertEquals(payload, outputStream.toString());
+    }
+
+    @Test
+    void testRepeatableEntity() throws Exception {
+        HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
+                new MockRequestLine("POST", "/"));
+
+        String payload = "{\"test\": \"val\"}";
+        request.setEntity(new StringEntity(payload));
+        HttpCoreContext context = new HttpCoreContext();
+        context.setTargetHost(HttpHost.create("localhost"));
+        interceptor.process(request, context);
+
+        assertTrue(request.getEntity().isRepeatable());
     }
 
     @Test
