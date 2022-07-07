@@ -1,5 +1,6 @@
 ### 2.0.3 (Next)
 
+* [#39](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/39): Fix retries - [@dblock](https://github.com/dblock).
 * [#37](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/37): Include test code in checkstyle - [@dblock](https://github.com/dblock).
 * Restrict checkstyle version and make Renovate run monthly - [@acm19](https://github.com/acm19).
 * [#36](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/36): Added SPDX license headers - [@dblock](https://github.com/dblock).
