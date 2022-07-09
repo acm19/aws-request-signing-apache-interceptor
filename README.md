@@ -63,14 +63,14 @@ public static void main(String[] args) throws ClientProtocolException, IOExcepti
 
 ## Examples
 
-To run the [Amazon OpenSearch Sample](src/test/java/io/github/acm19/aws/interceptor/test/AmazonOpenSearchServiceSample.java), replace the values of `host` and `region` in the source and run the following. 
+To run the [Amazon OpenSearch Sample](src/test/java/io/github/acm19/aws/interceptor/test/AmazonOpenSearchServiceSample.java) pass the values of _host_ and _region_ into `exec.args`.
 
 ```
 export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 export AWS_SESSION_TOKEN=
 
-mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample"
+mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://search-dblock-test-opensearch-21-tu5gqrjd4vg4qazjsu6bps5zsy.us-west-2.es.amazonaws.com --region=us-west-2"
 ```
 
 See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for more valid requests. 

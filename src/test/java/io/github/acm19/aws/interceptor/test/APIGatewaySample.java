@@ -10,30 +10,27 @@ package io.github.acm19.aws.interceptor.test;
 
 import java.io.IOException;
 
+import org.apache.commons.cli.ParseException;
 import org.apache.http.client.methods.HttpGet;
 
-import software.amazon.awssdk.regions.Region;
-
 public class APIGatewaySample extends Sample {
-    /**
-     * The invoke URL for your API which is usually
-     * https://api_id.execute-api.api-region.amazonaws.com/stage.
-     */
-    private static final String INVOKE_URL = "https://api_id.execute-api.api-region.amazonaws.com/stage";
-    private static final Region REGION = Region.US_EAST_1;
+    APIGatewaySample(final String[] args) throws ParseException {
+        super("execute-api", args);
+    }
 
     /**
      *
      * @param args
      * @throws IOException
+     * @throws ParseException
      */
-    public static void main(final String[] args) throws IOException {
-        APIGatewaySample apiGatewaySample = new APIGatewaySample();
+    public static void main(final String[] args) throws IOException, ParseException {
+        APIGatewaySample apiGatewaySample = new APIGatewaySample(args);
         apiGatewaySample.makeAPIGGetRequest();
     }
 
     private void makeAPIGGetRequest() throws IOException {
-        final HttpGet request = new HttpGet(INVOKE_URL + "/some/path?and=param");
-        logRequest("execute-api", REGION, request);
+        final HttpGet request = new HttpGet(endpoint + "/some/path?and=param");
+        logRequest(request);
     }
 }

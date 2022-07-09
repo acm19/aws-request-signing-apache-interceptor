@@ -14,6 +14,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -32,31 +37,76 @@ import software.amazon.awssdk.auth.signer.Aws4Signer;
 import software.amazon.awssdk.regions.Region;
 
 class Sample {
-    public static void main(final String[] args) throws IOException {
-        Sample sampleClass = new Sample();
+    private static final int SCREEN_WIDTH = 160;
+
+    protected String endpoint;
+    protected Region region;
+    protected String service;
+
+    Sample(final String service, final String[] args) throws ParseException {
+        this.service = service;
+        parseOptions(args);
+    }
+
+    Sample(final String service, final String endpoint, final Region region) {
+        this.endpoint = endpoint;
+        this.region = region;
+        this.service = service;
+    }
+
+    public static void main(final String[] args) throws IOException, ParseException {
+        Sample sampleClass = new Sample("", args);
         sampleClass.makeGetRequest();
         sampleClass.makePostRequest();
     }
 
+    protected void parseOptions(final String[] args) throws ParseException {
+        Options options = new Options()
+                .addRequiredOption(null, "endpoint", true, "OpenSearch endpoint")
+                .addRequiredOption(null, "region", true, "AWS signing region");
+
+        try {
+            CommandLine cmd = new DefaultParser().parse(options, args);
+            this.endpoint = cmd.getOptionValue("endpoint");
+            this.region = Region.of(cmd.getOptionValue("region"));
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            new HelpFormatter().printHelp(
+                    SCREEN_WIDTH,
+                    String.join(" ",
+                            "mvn",
+                            "test-compile",
+                            "exec:java",
+                            "-Dexec.classpathScope=test",
+                            "-Dexec.mainClass=\"" + getClass().getCanonicalName() + "\"",
+                            "-Dexec.args=\"...\""
+                    ),
+                    null,
+                    options,
+                    null);
+            throw e;
+        }
+    }
+
     private void makeGetRequest() throws IOException {
-        HttpGet httpGet = new HttpGet("http://targethost/homepage");
-        logRequest("", Region.US_EAST_1, httpGet);
+        HttpGet httpGet = new HttpGet(endpoint + "/homepage");
+        logRequest(httpGet);
     }
 
     private void makePostRequest() throws IOException {
-        HttpPost httpPost = new HttpPost("http://targethost/login");
+        HttpPost httpPost = new HttpPost(endpoint + "/login");
         List<NameValuePair> nvps = new ArrayList<>();
         nvps.add(new BasicNameValuePair("username", "vip"));
         nvps.add(new BasicNameValuePair("password", "secret"));
         httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-        logRequest("", Region.US_EAST_1, httpPost);
+        logRequest(httpPost);
     }
 
-    void logRequest(final String serviceName, final Region region, final HttpUriRequest request) throws IOException {
+    void logRequest(final HttpUriRequest request) throws IOException {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-        CloseableHttpClient httpClient = signingClientForServiceName(serviceName, region);
+        CloseableHttpClient httpClient = signingClient();
         try (CloseableHttpResponse response = httpClient.execute(request)) {
             System.out.println(response.getStatusLine());
             String inputLine;
@@ -79,9 +129,9 @@ class Sample {
         }
     }
 
-    CloseableHttpClient signingClientForServiceName(final String serviceName, final Region region) {
+    CloseableHttpClient signingClient() {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
-                serviceName,
+                service,
                 Aws4Signer.create(),
                 DefaultCredentialsProvider.create(),
                 region);
