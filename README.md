@@ -81,7 +81,8 @@ You're encouraged to contribute to this project. See [CONTRIBUTING](CONTRIBUTING
 
 ## Copyright
 
-Copyright 2017 Amazon.com, Inc. or its affiliates. See [NOTICE](NOTICE) for details.
+Copyright Amazon.com, Inc. or its affiliates, and Project Contributors.
+See [NOTICE](NOTICE) for details.
 
 ## License
 
