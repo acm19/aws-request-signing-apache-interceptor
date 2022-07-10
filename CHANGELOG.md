@@ -1,5 +1,6 @@
-### 2.0.3 (Next)
+### 2.1.0 (Next)
 
+* [#44](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/44): Release to Maven Central - [@dblock](https://github.com/dblock), [@acm19](https://github.com/acm19).
 * [#42](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/42): Add editorconfig - [@acm19](https://github.com/acm19).
 * [#45](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/45): Updating copyright to include contributors - [@dblock](https://github.com/dblock).
 * [#43](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/43): Add code scanning - [@acm19](https://github.com/acm19).
