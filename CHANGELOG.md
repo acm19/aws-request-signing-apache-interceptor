@@ -1,5 +1,6 @@
 ### 2.1.0 (Next)
 
+* [#58](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/58): Test and fix Maven Central - [@acm19](https://github.com/acm19).
 * [#59](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/59): Document versioning standard - [@acm19](https://github.com/acm19).
 * [#44](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/44): Release to Maven Central - [@dblock](https://github.com/dblock), [@acm19](https://github.com/acm19).
 * [#42](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/42): Add editorconfig - [@acm19](https://github.com/acm19).
