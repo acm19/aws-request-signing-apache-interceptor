@@ -11,9 +11,7 @@ This library is based on [AWS Interceptor](https://github.com/awslabs/aws-reques
 ## Usage
 
 ```java
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.ClientProtocolException;
@@ -26,6 +24,7 @@ import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.utils.IoUtils;
 
 public static void main(String[] args) throws ClientProtocolException, IOException {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
@@ -42,21 +41,7 @@ public static void main(String[] args) throws ClientProtocolException, IOExcepti
         HttpGet httpGet = new HttpGet("https://...");
         CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
         System.out.println(httpResponse.getStatusLine());
-
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(
-                        httpResponse.getEntity().getContent()
-                )
-        );
-
-        String inputLine;
-        StringBuffer response = new StringBuffer();
-        while ((inputLine = reader.readLine()) != null) {
-                response.append(inputLine);
-        }
-        reader.close();
-
-        System.out.println(response.toString());
+        System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));            
         httpClient.close();
 }
 ```
