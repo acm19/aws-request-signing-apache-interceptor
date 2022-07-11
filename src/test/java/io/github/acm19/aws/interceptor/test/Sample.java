@@ -8,9 +8,7 @@
 
 package io.github.acm19.aws.interceptor.test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +33,7 @@ import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.utils.IoUtils;
 
 class Sample {
     private static final int SCREEN_WIDTH = 160;
@@ -109,16 +108,7 @@ class Sample {
         CloseableHttpClient httpClient = signingClient();
         try (CloseableHttpResponse response = httpClient.execute(request)) {
             System.out.println(response.getStatusLine());
-            String inputLine;
-            BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            try {
-                while ((inputLine = br.readLine()) != null) {
-                    System.out.println(inputLine);
-                }
-                br.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
             switch (response.getStatusLine().getStatusCode()) {
                 case HttpStatus.SC_OK:
                 case HttpStatus.SC_CREATED:
