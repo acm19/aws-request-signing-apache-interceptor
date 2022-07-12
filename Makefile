@@ -28,8 +28,10 @@ set_release_version:
 update_release_files_and_commit:
 	DATE=$$(date +%Y\\/%m\\/%d) && \
 	sed -i -E "1 s/\\s+\\(Next\\)\s*$$/ \\($$DATE\\)/" CHANGELOG.md
-	git add pom.xml CHANGELOG.md
-	git commit -m "Release version $(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+	VERSION=$(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout) && \
+	sed -i -E "s|<version>.*<\/version>|<version>$$VERSION</version>|" README.md && \
+	git add pom.xml CHANGELOG.md README.md && \
+	git commit -m "Release version $$VERSION"
 	git push $(REMOTE) $(RELEASE_BRANCH)
 
 .PHONY: prepare_next_development_version
@@ -46,9 +48,10 @@ set_next_development_version:
 .PHONY: update_development_files_and_commit
 .SILENT: update_development_files_and_commit
 update_development_files_and_commit:
-	sed -i "1 s/^/### $(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout) \(Next\)\\n\\n/" CHANGELOG.md
-	git add pom.xml CHANGELOG.md
-	git commit -m "Prepare for next development iteration $(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+	VERSION=$(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout | cut -d- -f1) && \
+	sed -i "1 s/^/### $$VERSION \(Next\)\\n\\n/" CHANGELOG.md && \
+	git add pom.xml CHANGELOG.md && \
+	git commit -m "Prepare for next development iteration $$VERSION"
 	git push $(REMOTE) $(SNAPSHOT_BRANCH)
 
 .PHONY: create_pull_requests
