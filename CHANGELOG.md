@@ -1,6 +1,8 @@
-### 2.1.2-SNAPSHOT (Next)
+### 2.1.2 (Next)
 
-### 2.1.1-SNAPSHOT (2022/07/12)
+[#70](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/70): Add maven release info, usage and badge to README - [@dblock](https://github.com/dblock).
+
+### 2.1.1 (2022/07/12)
 
 * [#67](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/67): Add fields required by Maven Central to de POM - [@acm19](https://github.com/acm19).
 

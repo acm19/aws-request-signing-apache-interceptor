@@ -1,6 +1,7 @@
 # AWS Request Signing Interceptor
 
 [![tests](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/test.yml/badge.svg)](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/test.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.acm19/aws-request-signing-apache-interceptor)](https://search.maven.org/artifact/io.github.acm19/aws-request-signing-apache-interceptor)
 
 An AWS request signing interceptor for arbitrary HTTP requests.
 
@@ -9,6 +10,16 @@ This library enables you to sign requests to any service that leverages SigV4, a
 This library is based on [AWS Interceptor](https://github.com/awslabs/aws-request-signing-apache-interceptor), but using AWS SDK 2.x.
 
 ## Usage
+
+Add [io.github.acm19.aws-request-signing-apache-interceptor](https://repo1.maven.org/maven2/io/github/acm19/aws-request-signing-apache-interceptor/) as a dependency.
+
+```xml
+<dependency>
+  <groupId>io.github.acm19</groupId>
+  <artifactId>aws-request-signing-apache-interceptor</artifactId>
+  <version>2.1.1</version>
+</dependency>
+```
 
 ```java
 import java.io.IOException;
@@ -55,7 +66,7 @@ export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 export AWS_SESSION_TOKEN=
 
-mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://search-dblock-test-opensearch-21-tu5gqrjd4vg4qazjsu6bps5zsy.us-west-2.es.amazonaws.com --region=us-west-2"
+mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://...us-west-2.es.amazonaws.com --region=us-west-2"
 ```
 
 See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for more valid requests. 
