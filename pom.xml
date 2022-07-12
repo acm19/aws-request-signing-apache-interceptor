@@ -7,6 +7,12 @@
   <version>2.1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
+  <name>AWS Request Signing Apache Interceptor</name>
+  <description>
+    This library enables signing requests to any service that leverages SigV4,
+    and thus access any AWS Service or APIG-backed service.
+  </description>
+  <url>https://github.com/acm19/aws-request-signing-apache-interceptor</url>
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -14,6 +20,17 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+
+  <developers>
+    <developer>
+      <name>acm19</name>
+      <email>acm19@users.noreply.github.com</email>
+    </developer>
+    <developer>
+      <name>Daniel Doubrovkine</name>
+      <email>dblock@dblock.org</email>
+    </developer>
+  </developers>
 
   <scm>
     <url>https://github.com/acm19/aws-request-signing-apache-interceptor</url>

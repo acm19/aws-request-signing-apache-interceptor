@@ -1,5 +1,7 @@
 ### 2.1.1-SNAPSHOT (Next)
 
+* [#67](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/67): Add fields required by Maven Central to de POM - [@acm19](https://github.com/acm19).
+
 ### 2.1.0 (2022/07/12)
 
 * [#58](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/58): Test and fix the release process - [@acm19](https://github.com/acm19).
