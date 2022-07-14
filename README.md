@@ -40,8 +40,8 @@ import software.amazon.awssdk.utils.IoUtils;
 public static void main(String[] args) throws ClientProtocolException, IOException {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
                 "service",
-                Aws4Signer.create(), 
-                DefaultCredentialsProvider.create(), 
+                Aws4Signer.create(),
+                DefaultCredentialsProvider.create(),
                 Region.US_WEST_2
         );
 
@@ -52,14 +52,14 @@ public static void main(String[] args) throws ClientProtocolException, IOExcepti
         HttpGet httpGet = new HttpGet("https://...");
         CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
         System.out.println(httpResponse.getStatusLine());
-        System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));            
+        System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
         httpClient.close();
 }
 ```
 
 ## Examples
 
-To run the [Amazon OpenSearch Sample](src/test/java/io/github/acm19/aws/interceptor/test/AmazonOpenSearchServiceSample.java) pass the values of _host_ and _region_ into `exec.args`.
+To run the [Amazon OpenSearch Sample](src/test/java/io/github/acm19/aws/interceptor/test/AmazonOpenSearchServiceSample.java) pass the values of _endpoint_ and _region_ into `exec.args`.
 
 ```
 export AWS_ACCESS_KEY_ID=
@@ -69,9 +69,15 @@ export AWS_SESSION_TOKEN=
 mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://...us-west-2.es.amazonaws.com --region=us-west-2"
 ```
 
-See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for more valid requests. 
+Alternatively use `make` as follows:
 
-## Contributing 
+```
+ENDPOINT=<your-endpoint> REGION=<your-region> make run_sample
+```
+
+See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for more valid requests.
+
+## Contributing
 
 You're encouraged to contribute to this project. See [CONTRIBUTING](CONTRIBUTING.md) for details.
 

@@ -1,6 +1,9 @@
-RELEASE_BRANCH=release
-SNAPSHOT_BRANCH=snapshot
-REMOTE=origin
+REGION?=us-east-1
+ENDPOINT?=http://my-domain.us-east-1.opensearch.localhost.localstack.cloud:4566
+
+RELEASE_BRANCH?=release
+SNAPSHOT_BRANCH?=snapshot
+REMOTE?=origin
 
 .PHONY: release
 .SILENT: release
@@ -77,6 +80,15 @@ validate_branch_dont_exist:
 	git branch | grep -Eq "$(RELEASE_BRANCH)|$(SNAPSHOT_BRANCH)" && exit 2 || \
 	git remote show $(REMOTE) | grep -Eq "$(RELEASE_BRANCH)|$(SNAPSHOT_BRANCH)" && exit 2 || true
 
+.PHONY: run_sample
+.SILENT: run_sample
+run_sample:
+	mvn test-compile exec:java \
+		-Dexec.classpathScope=test \
+		-Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" \
+		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION)"
+
 .PHONY: validate_renovate_config
+.SILENT: validate_renovate_config
 validate_renovate_config:
 	docker run -it --rm -v $$(pwd):/tmp/app  renovate/renovate bash -c "cd /tmp/app && renovate-config-validator"
