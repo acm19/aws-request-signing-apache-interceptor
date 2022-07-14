@@ -65,12 +65,33 @@ git config --global user.name "Your Name"
 git config --global user.email "contributor@example.com"
 ```
 
-Writing good commit logs is important. A commit log should describe what changed and why.
+Writing good commit logs is important. [A commit log should describe what changed and why](#commit-message-convention).
 
 ```
 git add ...
 git commit
 ```
+
+## Commit Message Convention
+
+Commit message should be [written as follows](https://github.com/torvalds/subsurface-for-dirk/blob/a48494d2fbed58c751e9b7e8fbff88582f9b2d02/README#L88):
+
+> Header line: explain the commit in one line (use the imperative)
+>
+> Body of commit message is a few lines of text, explaining things in more detail, possibly giving some background about the issue being fixed, etc etc.
+>
+> The body of the commit message can be several paragraphs, and please do proper word-wrap and keep columns shorter than about 74 characters or so. That way "git log" will show things nicely even when it's indented.
+>
+> Make sure you explain your solution and why you're doing what you're doing, as opposed to describing what you're doing. Reviewers and your future self can read the patch, but might not understand why a particular solution was implemented.
+
+If you are using `vim` to edit your commit messages the following configuration might be useful in your `~/.vimrc` to automatically add line breaks.
+```
+au FileType gitcommit set tw=72
+```
+
+> **_IMPORTANT:_** Add a reference to the PR at the end of the commit header surrounded by parenthesis, e.g. `(#32)`. You can use `git commit --amend` to edit your commit once you have the PR created.
+
+> **_NOTE:_** A single commit is expected per push request to keep the GitLog clean and self-explanatory.
 
 ## Push
 
@@ -95,10 +116,10 @@ git push origin my-feature-branch -f
 
 ## Update CHANGELOG Again
 
-Update the [CHANGELOG](CHANGELOG.md) with the pull request number. A typical entry looks as follows.
+Update the [CHANGELOG](CHANGELOG.md) with the pull request number. Usually the message matches the [commit header](#commit-message-convention). A typical entry looks as follows.
 
 ```
-* [#123](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/123): Reticulated splines - [@contributor](https://github.com/contributor).
+* [#123](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/123): Reticulate splines - [@contributor](https://github.com/contributor).
 ```
 
 Amend your previous commit and force push the changes.
