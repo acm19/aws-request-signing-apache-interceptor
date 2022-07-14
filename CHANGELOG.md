@@ -1,5 +1,6 @@
 ### 2.1.2 (Next)
 
+* [#72](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/72): Add running sample recipe - [@acm19](https://github.com/acm19).
 * [#71](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/71): Add commit message convention - [@acm19](https://github.com/acm19).
 * [#70](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/70): Add maven release info, usage and badge to README - [@dblock](https://github.com/dblock).
 
