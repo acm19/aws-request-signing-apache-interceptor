@@ -3,3 +3,7 @@ nb-configuration.xml
 .vscode
 .DS_Store
 .idea
+venv
+node_modules/
+cdk.out/
+__pycache__/

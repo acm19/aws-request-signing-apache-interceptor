@@ -46,6 +46,10 @@ Implement your feature or bug fix.
 
 Make sure that `mvn test` completes without errors.
 
+## Integration Tests
+
+To run integration tests against real infrastructure you can easily deploy a working cluster following [these instructions](infra/README.md).
+
 ## Write Documentation
 
 Document any external behavior in the [README](README.md).
