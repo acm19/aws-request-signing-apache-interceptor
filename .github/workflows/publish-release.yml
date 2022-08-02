@@ -1,4 +1,4 @@
-name: Deploy to Maven
+name: Publish Release
 
 on:
   push:
@@ -6,11 +6,15 @@ on:
       - master
 
 jobs:
-  build:
+  test:
+    uses: ./.github/workflows/test.yml
+  publish:
     name: Build project and deploy
+    needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout the repository
+      uses: actions/checkout@v3
     - name: Set up JDK
       uses: actions/setup-java@v3
       with:
@@ -34,7 +38,7 @@ jobs:
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
-    - name: Create Release
+    - name: Create Release Tag
       if: ${{ !endsWith(steps.project.outputs.version, '-SNAPSHOT') }}
       id: create_release
       uses: actions/create-release@v1
