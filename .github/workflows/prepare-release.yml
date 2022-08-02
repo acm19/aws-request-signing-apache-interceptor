@@ -1,0 +1,54 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+  release:
+    name: Prepare release
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PUSH_TOKEN }}
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: maven
+      - name: Set release version
+        run: |
+            mvn build-helper:parse-version versions:set -DgenerateBackupPoms=false \
+              -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion}
+      - name: Update files for release
+        run: |
+            DATE=$(date +%Y/%m/%d)
+            sed -i -E "1 s|\s+\(Next\)\s*\$| \($DATE\)|" CHANGELOG.md
+            VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            sed -i -E "s|<version>.*</version>|<version>$VERSION</version>|" README.md
+      - name: Commit release and push
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Release version $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+          git push
+      - name: Set development version
+        run: |
+          mvn build-helper:parse-version versions:set -DgenerateBackupPoms=false \
+            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT
+      - name: Update files for development
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | cut -d- -f1)
+          sed -i "1 s/^/### $VERSION \(Next\)\n\n/" CHANGELOG.md
+      - name: Commit snapshot and push
+        run: |
+          git add pom.xml CHANGELOG.md
+          git commit -m "Prepare for next development iteration $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+          git push

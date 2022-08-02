@@ -1,5 +1,10 @@
-name: Execute Java tests
-on: [push, pull_request]
+name: Execute Java Tests
+on:
+  pull_request:
+  workflow_call:
+  push:
+    branches-ignore:
+      - master
 
 jobs:
   test:
