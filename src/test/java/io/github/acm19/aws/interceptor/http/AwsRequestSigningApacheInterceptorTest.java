@@ -158,9 +158,9 @@ class AwsRequestSigningApacheInterceptorTest {
                 new MockRequestLine("POST", "/query?a=b"));
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
-        gzipOutputStream.write(data.getBytes("UTF-8"));
-        gzipOutputStream.close();
+        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
+            gzipOutputStream.write(data.getBytes("UTF-8"));
+        }
 
         ByteArrayEntity entity = new ByteArrayEntity(outputStream.toByteArray(),
                 ContentType.DEFAULT_BINARY);

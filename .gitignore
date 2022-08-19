@@ -1,5 +1,6 @@
 /target/
 nb-configuration.xml
+nbactions.xml
 .vscode
 .DS_Store
 .idea
