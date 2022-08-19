@@ -59,7 +59,7 @@ class Sample {
         sampleClass.makePostRequest();
     }
 
-    protected void parseOptions(final String[] args) throws ParseException {
+    private void parseOptions(final String[] args) throws ParseException {
         Options options = new Options()
                 .addRequiredOption(null, "endpoint", true, "OpenSearch endpoint")
                 .addRequiredOption(null, "region", true, "AWS signing region");

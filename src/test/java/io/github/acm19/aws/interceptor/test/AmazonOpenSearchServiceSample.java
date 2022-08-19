@@ -111,9 +111,9 @@ public class AmazonOpenSearchServiceSample extends Sample {
         String payload = "{\"test\": \"val\"}";
         // do not use GZipCompressingEntity because it forces chunking
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
-        gzipOutputStream.write(payload.getBytes("UTF-8"));
-        gzipOutputStream.close();
+        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
+            gzipOutputStream.write(payload.getBytes("UTF-8"));
+        }
         ByteArrayEntity entity = new ByteArrayEntity(outputStream.toByteArray(), ContentType.DEFAULT_BINARY);
         entity.setContentEncoding("gzip");
         httpPost.setEntity(entity);
