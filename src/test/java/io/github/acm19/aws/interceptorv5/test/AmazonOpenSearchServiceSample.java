@@ -6,19 +6,19 @@
  * Apache-2.0 license or a compatible open source license.
  */
 
-package io.github.acm19.aws.interceptor.test;
+package io.github.acm19.aws.interceptorv5.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.cli.ParseException;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.entity.GzipCompressingEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.GzipCompressingEntity;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 
 /**
  * An AWS Request Signing Interceptor sample for arbitrary HTTP requests to an
@@ -96,8 +96,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
     private void indexDocumentWithChunkedTransferEncoding() throws IOException {
         String payload = "{\"test\": \"val\"}";
         HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
-        StringEntity entity = new StringEntity(payload);
-        entity.setChunked(true);
+        StringEntity entity = new StringEntity(payload, ContentType.DEFAULT_TEXT, true);
         httpPost.setEntity(entity);
         httpPost.addHeader("Content-Type", "application/json");
         logRequest(httpPost);
@@ -113,8 +112,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
         try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
             gzipOutputStream.write(payload.getBytes("UTF-8"));
         }
-        ByteArrayEntity entity = new ByteArrayEntity(outputStream.toByteArray(), ContentType.DEFAULT_BINARY);
-        entity.setContentEncoding("gzip");
+        ByteArrayEntity entity = new ByteArrayEntity(outputStream.toByteArray(), ContentType.DEFAULT_BINARY, "gzip");
         httpPost.setEntity(entity);
         logRequest(httpPost);
     }

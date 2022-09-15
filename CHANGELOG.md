@@ -1,5 +1,6 @@
-### 2.1.2 (Next)
+### 2.2.0 (Next)
 
+* [#80](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/80): Add support for Apache client v5 - [@acm19](https://github.com/acm19).
 * [#76](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/76): Automate release process - [@acm19](https://github.com/acm19).
 * [#75](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/75): Add OpenSearch cluster infrastructure - [@acm19](https://github.com/acm19).
 * [#72](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/72): Add running sample recipe - [@acm19](https://github.com/acm19).
