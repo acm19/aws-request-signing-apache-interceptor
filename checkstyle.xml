@@ -108,7 +108,6 @@
     <module name="ImportOrder">
       <property name="groups" value="/^java\./,javax,org"/>
       <property name="ordered" value="true"/>
-      <property name="separated" value="true"/>
       <property name="option" value="top"/>
       <property name="separatedStaticGroups" value="true"/>
       <property name="sortStaticImportsAlphabetically" value="true"/>

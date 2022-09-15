@@ -6,7 +6,7 @@
  * Apache-2.0 license or a compatible open source license.
  */
 
-package io.github.acm19.aws.interceptor.test;
+package io.github.acm19.aws.interceptorv5.test;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,22 +16,21 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheV5Interceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.utils.IoUtils;
 
 class Sample {
     private static final int SCREEN_WIDTH = 160;
@@ -100,32 +99,27 @@ class Sample {
     }
 
     void logRequest(final HttpUriRequest request) throws IOException {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-        System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
         CloseableHttpClient httpClient = signingClient();
         try (CloseableHttpResponse response = httpClient.execute(request)) {
-            System.out.println(response.getStatusLine());
-            System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
-            switch (response.getStatusLine().getStatusCode()) {
+            switch (response.getCode()) {
                 case HttpStatus.SC_OK:
                 case HttpStatus.SC_CREATED:
                     break;
                 default:
-                    throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+                    throw new RuntimeException(response.getReasonPhrase());
             }
         }
     }
 
     CloseableHttpClient signingClient() {
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
                 service,
                 Aws4Signer.create(),
                 DefaultCredentialsProvider.create(),
                 region);
 
         return HttpClients.custom()
-                .addInterceptorLast(interceptor)
+                .addRequestInterceptorLast(interceptor)
                 .build();
     }
 }

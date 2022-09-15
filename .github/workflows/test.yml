@@ -26,3 +26,5 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Run tests with Maven
         run: mvn --batch-mode verify
+      - name: Validate checkstyle
+        run: mvn validate -Pcheckstyle

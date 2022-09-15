@@ -22,17 +22,20 @@ synth: node_modules
 
 .PHONY: bootstrap
 .SILENT: bootstrap
-bootstrap:
+bootstrap: node_modules venv
+	. venv/bin/activate && \
 	./node_modules/.bin/cdk bootstrap
 
 .PHONY: deploy
 .SILENT: deploy
-deploy: node_modules
+deploy: node_modules venv
+	. venv/bin/activate && \
 	./node_modules/.bin/cdk deploy --path-metadata false
 
 .PHONY: destroy
 .SILENT: destroy
 destroy:
+	. venv/bin/activate && \
 	./node_modules/.bin/cdk destroy
 
 .PHONY: destroy_all
