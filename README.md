@@ -101,7 +101,9 @@ final class Example {
 
 ## Examples
 
-To run the [Amazon OpenSearch Sample](src/test/java/io/github/acm19/aws/interceptor/test/AmazonOpenSearchServiceSample.java) pass the values of _endpoint_ and _region_ into `exec.args`.
+### Apache HTTP Client
+
+To run the [Amazon OpenSearch Sample](src/test/java/io/github/acm19/aws/interceptor/test/AmazonOpenSearchServiceSample.java) pass the values of `endpoint` and `region` into `exec.args`.
 
 ```
 export AWS_ACCESS_KEY_ID=
@@ -118,6 +120,26 @@ ENDPOINT=<your-endpoint> REGION=<your-region> make run_sample
 ```
 
 See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for more valid requests.
+
+### Apache HTTP Client V5
+
+To run the [Amazon OpenSearch Sample](src/test/java/io/github/acm19/aws/interceptorv5/test/AmazonOpenSearchServiceSample.java) pass the values of `endpoint` and `region` into `exec.args`.
+
+```
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_SESSION_TOKEN=
+
+mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://...us-west-2.es.amazonaws.com --region=us-west-2"
+```
+
+Alternatively use `make` as follows:
+
+```
+ENDPOINT=<your-endpoint> REGION=<your-region> make run_v5_sample
+```
+
+See [examples](src/test/java/io/github/acm19/aws/interceptorv5/test) for more valid requests.
 
 ## Contributing
 
