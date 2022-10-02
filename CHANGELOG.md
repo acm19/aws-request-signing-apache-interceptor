@@ -1,4 +1,4 @@
-### 2.2.0 (Next)
+### 2.2.0 (2022/10/02)
 
 * [#80](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/80): Add support for Apache client v5 - [@acm19](https://github.com/acm19).
 * [#76](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/76): Automate release process - [@acm19](https://github.com/acm19).
