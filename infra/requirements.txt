@@ -1,3 +1,3 @@
-aws-cdk-lib==2.44.0
-constructs==10.1.118
-types-setuptools==65.4.0.0
+aws-cdk-lib==2.49.1
+constructs==10.1.146
+types-setuptools==65.5.0.2
