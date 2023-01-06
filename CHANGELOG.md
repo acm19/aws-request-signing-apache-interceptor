@@ -1,5 +1,7 @@
 ### 2.2.1 (Next)
 
+* [#92](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/92): Make samples compatible with OpenSearch 2.x - [@dblock](https://github.com/dblock).
+
 ### 2.2.0 (2022/10/02)
 
 * [#80](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/80): Add support for Apache client v5 - [@acm19](https://github.com/acm19).

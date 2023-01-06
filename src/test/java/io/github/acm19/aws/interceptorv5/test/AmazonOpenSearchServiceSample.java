@@ -12,8 +12,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.cli.ParseException;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.entity.GzipCompressingEntity;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -31,9 +33,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * Example usage with the OpenSearch low-level REST client:
  *
  * <pre>
- * Aws4Signer signer = Aws4Signer.create();
- *
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
  *         Aws4Signer.create(),
  *         DefaultCredentialsProvider.create(),
@@ -48,7 +48,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * Example usage with the OpenSearch high-level REST client:
  *
  * <pre>
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
  *         Aws4Signer.create(),
  *         DefaultCredentialsProvider.create(),
@@ -74,11 +74,29 @@ public class AmazonOpenSearchServiceSample extends Sample {
     public static void main(final String[] args) throws IOException, ParseException {
         AmazonOpenSearchServiceSample sample = new AmazonOpenSearchServiceSample(args);
         sample.makeRequest();
-        sample.indexDocument();
-        sample.indexDocumentWithCompressionEnabled();
-        // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/20
-        // sample.indexDocumentWithChunkedTransferEncoding();
-        // sample.indexDocumentWithChunkedTransferEncodingCompressionEnabled();
+        sample.createIndex();
+        try {
+            sample.indexDocument();
+            sample.indexDocumentWithCompressionEnabled();
+            // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/20
+            // sample.indexDocumentWithChunkedTransferEncoding();
+            // sample.indexDocumentWithChunkedTransferEncodingCompressionEnabled();
+        } finally {
+            sample.deleteIndex();
+        }
+    }
+
+    private void createIndex() throws IOException {
+        String payload = "{}";
+        HttpPut httpPut = new HttpPut(endpoint + "/index_name");
+        httpPut.setEntity(new StringEntity(payload));
+        httpPut.addHeader("Content-Type", "application/json");
+        logRequest(httpPut);
+    }
+
+    private void deleteIndex() throws IOException {
+        HttpDelete httpDelete = new HttpDelete(endpoint + "/index_name");
+        logRequest(httpDelete);
     }
 
     private void makeRequest() throws IOException {
@@ -87,7 +105,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
 
     private void indexDocument() throws IOException {
         String payload = "{\"test\": \"val\"}";
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         httpPost.setEntity(new StringEntity(payload));
         httpPost.addHeader("Content-Type", "application/json");
         logRequest(httpPost);
@@ -95,7 +113,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
 
     private void indexDocumentWithChunkedTransferEncoding() throws IOException {
         String payload = "{\"test\": \"val\"}";
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         StringEntity entity = new StringEntity(payload, ContentType.DEFAULT_TEXT, true);
         httpPost.setEntity(entity);
         httpPost.addHeader("Content-Type", "application/json");
@@ -103,7 +121,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
     }
 
     private void indexDocumentWithCompressionEnabled() throws IOException {
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         httpPost.addHeader("Content-Type", "application/json");
         String payload = "{\"test\": \"val\"}";
@@ -118,7 +136,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
     }
 
     private void indexDocumentWithChunkedTransferEncodingCompressionEnabled() throws IOException {
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         httpPost.addHeader("Content-Type", "application/json");
         String payload = "{\"test\": \"val\"}";

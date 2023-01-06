@@ -14,8 +14,10 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.cli.ParseException;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.entity.GzipCompressingEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -74,20 +76,38 @@ public class AmazonOpenSearchServiceSample extends Sample {
     public static void main(final String[] args) throws IOException, ParseException {
         AmazonOpenSearchServiceSample sample = new AmazonOpenSearchServiceSample(args);
         sample.makeRequest();
-        sample.indexDocument();
-        sample.indexDocumentWithCompressionEnabled();
-        // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/20
-        // sample.indexDocumentWithChunkedTransferEncoding();
-        // sample.indexDocumentWithChunkedTransferEncodingCompressionEnabled();
+        sample.createIndex();
+        try {
+            sample.indexDocument();
+            sample.indexDocumentWithCompressionEnabled();
+            // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/20
+            // sample.indexDocumentWithChunkedTransferEncoding();
+            // sample.indexDocumentWithChunkedTransferEncodingCompressionEnabled();
+        } finally {
+            sample.deleteIndex();
+        }
     }
 
     private void makeRequest() throws IOException {
         logRequest(new HttpGet(endpoint));
     }
 
+    private void createIndex() throws IOException {
+        String payload = "{}";
+        HttpPut httpPut = new HttpPut(endpoint + "/index_name");
+        httpPut.setEntity(new StringEntity(payload));
+        httpPut.addHeader("Content-Type", "application/json");
+        logRequest(httpPut);
+    }
+
+    private void deleteIndex() throws IOException {
+        HttpDelete httpDelete = new HttpDelete(endpoint + "/index_name");
+        logRequest(httpDelete);
+    }
+
     private void indexDocument() throws IOException {
         String payload = "{\"test\": \"val\"}";
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         httpPost.setEntity(new StringEntity(payload));
         httpPost.addHeader("Content-Type", "application/json");
         logRequest(httpPost);
@@ -95,7 +115,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
 
     private void indexDocumentWithChunkedTransferEncoding() throws IOException {
         String payload = "{\"test\": \"val\"}";
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         StringEntity entity = new StringEntity(payload);
         entity.setChunked(true);
         httpPost.setEntity(entity);
@@ -104,7 +124,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
     }
 
     private void indexDocumentWithCompressionEnabled() throws IOException {
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         httpPost.addHeader("Content-Type", "application/json");
         String payload = "{\"test\": \"val\"}";
@@ -120,7 +140,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
     }
 
     private void indexDocumentWithChunkedTransferEncodingCompressionEnabled() throws IOException {
-        HttpPost httpPost = new HttpPost(endpoint + "/index_name/type_name/document_id");
+        HttpPost httpPost = new HttpPost(endpoint + "/index_name/_doc/document_id");
         httpPost.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         httpPost.addHeader("Content-Type", "application/json");
         String payload = "{\"test\": \"val\"}";
