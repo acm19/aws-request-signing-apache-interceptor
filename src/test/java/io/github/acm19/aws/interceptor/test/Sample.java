@@ -30,6 +30,7 @@ import org.apache.http.message.BasicNameValuePair;
 import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.core.signer.Signer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
@@ -39,25 +40,25 @@ class Sample {
     protected String endpoint;
     protected Region region;
     protected String service;
+    private final Signer signer;
 
-    Sample(final String service, final String[] args) throws ParseException {
+    Sample(String service, String[] args) throws ParseException {
+        this(service, args, Aws4Signer.create());
+    }
+
+    Sample(String service, String[] args, Signer signer) throws ParseException {
         this.service = service;
         parseOptions(args);
+        this.signer = signer;
     }
 
-    Sample(final String service, final String endpoint, final Region region) {
-        this.endpoint = endpoint;
-        this.region = region;
-        this.service = service;
-    }
-
-    public static void main(final String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException {
         Sample sampleClass = new Sample("", args);
         sampleClass.makeGetRequest();
         sampleClass.makePostRequest();
     }
 
-    private void parseOptions(final String[] args) throws ParseException {
+    private void parseOptions(String[] args) throws ParseException {
         Options options = new Options()
                 .addRequiredOption(null, "endpoint", true, "OpenSearch endpoint")
                 .addRequiredOption(null, "region", true, "AWS signing region");
@@ -99,7 +100,7 @@ class Sample {
         logRequest(httpPost);
     }
 
-    void logRequest(final HttpUriRequest request) throws IOException {
+    void logRequest(HttpUriRequest request) throws IOException {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
@@ -120,7 +121,7 @@ class Sample {
     CloseableHttpClient signingClient() {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
                 service,
-                Aws4Signer.create(),
+                signer,
                 DefaultCredentialsProvider.create(),
                 region);
 

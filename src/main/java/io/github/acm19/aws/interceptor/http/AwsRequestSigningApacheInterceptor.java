@@ -40,6 +40,7 @@ import software.amazon.awssdk.regions.Region;
  */
 public final class AwsRequestSigningApacheInterceptor implements HttpRequestInterceptor {
     private final RequestSigner signer;
+    private final boolean isServerlessOpenSearch;
 
     /**
      * Creates an {@code AwsRequestSigningApacheInterceptor} with the
@@ -51,12 +52,12 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheInterceptor(
-            final String service,
-            final Signer signer,
-            final AwsCredentialsProvider awsCredentialsProvider,
-            final Region region) {
+    public AwsRequestSigningApacheInterceptor(String service,
+                                              Signer signer,
+                                              AwsCredentialsProvider awsCredentialsProvider,
+                                              Region region) {
         this.signer = new RequestSigner(service, signer, awsCredentialsProvider, region);
+        this.isServerlessOpenSearch = "aoss".equals(service);
     }
 
     /**
@@ -69,11 +70,10 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheInterceptor(
-            final String service,
-            final Signer signer,
-            final AwsCredentialsProvider awsCredentialsProvider,
-            final String region) {
+    public AwsRequestSigningApacheInterceptor(String service,
+                                              Signer signer,
+                                              AwsCredentialsProvider awsCredentialsProvider,
+                                              String region) {
         this(service, signer, awsCredentialsProvider, Region.of(region));
     }
 
@@ -81,7 +81,7 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * {@inheritDoc}
      */
     @Override
-    public void process(final HttpRequest request, final HttpContext context)
+    public void process(HttpRequest request, HttpContext context)
             throws HttpException, IOException {
         URI requestUri = RequestSigner.buildUri(context, request.getRequestLine().getUri());
 
@@ -101,8 +101,15 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
         requestBuilder.headers(headerArrayToMap(request.getAllHeaders()));
         SdkHttpFullRequest signedRequest = signer.signRequest(requestBuilder.build());
 
-        // copy everything back
-        request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+        if (!isServerlessOpenSearch) {
+            // copy everything back
+            request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+        } else {
+            // copy everything back, don't override headers as not all of them were used for signing the request
+            for (Header header : mapToHeaderArray(signedRequest.headers())) {
+                request.setHeader(header);
+            }
+        }
 
         if (request instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest httpEntityEnclosingRequest = (HttpEntityEnclosingRequest) request;
@@ -117,7 +124,7 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
         }
     }
 
-    private static Map<String, List<String>> headerArrayToMap(final Header[] headers) {
+    private Map<String, List<String>> headerArrayToMap(Header[] headers) {
         Map<String, List<String>> headersMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Header header : headers) {
             if (!skipHeader(header)) {
@@ -129,13 +136,28 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
         return headersMap;
     }
 
-    private static boolean skipHeader(final Header header) {
+    /**
+     * Ignores {@code Host} headers and {@code Content-Length} as long as it either
+     * contains the value {@code 0} or the service to be signed is Serverless
+     * OpenSearch. Details in AWS documentation below.
+     *
+     * AWS documentation:
+     * <pre><a href="https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-clients.html
+     * #serverless-signing">
+     *   Signing requests to OpenSearch Serverless
+     * </a></pre>
+     *
+     * @param header the header to evaluate
+     * @return {@code true} if header must be ignored {@code false} otherwise
+     */
+    private boolean skipHeader(Header header) {
+               // Strip for Content-Length: 0 and Serverless
         return (HTTP.CONTENT_LEN.equalsIgnoreCase(header.getName())
-                && "0".equals(header.getValue())) // Strip Content-Length: 0
+                && (("0".equals(header.getValue())) || isServerlessOpenSearch))
                 || HTTP.TARGET_HOST.equalsIgnoreCase(header.getName()); // Host comes from endpoint
     }
 
-    private static Header[] mapToHeaderArray(final Map<String, List<String>> mapHeaders) {
+    private static Header[] mapToHeaderArray(Map<String, List<String>> mapHeaders) {
         Header[] headers = new Header[mapHeaders.size()];
         int i = 0;
         for (Map.Entry<String, List<String>> headerEntry : mapHeaders.entrySet()) {

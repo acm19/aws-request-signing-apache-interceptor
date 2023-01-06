@@ -20,13 +20,13 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.impl.BasicEntityDetails;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.apache.hc.core5.http.protocol.HttpCoreContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
@@ -45,10 +45,13 @@ class AwsRequestSigningApacheV5InterceptorTest {
 
     @BeforeEach
     void createInterceptor() {
+        interceptor = buildInterceptor("servicename", new AddHeaderSigner("Signature", "wuzzle"));
+    }
+
+    private static AwsRequestSigningApacheV5Interceptor buildInterceptor(String serviceName, AddHeaderSigner signer) {
         AwsCredentialsProvider anonymousCredentialsProvider = StaticCredentialsProvider
                 .create(AnonymousCredentialsProvider.create().resolveCredentials());
-        interceptor = new AwsRequestSigningApacheV5Interceptor("servicename",
-                new AddHeaderSigner("Signature", "wuzzle"),
+        return new AwsRequestSigningApacheV5Interceptor(serviceName, signer,
                 anonymousCredentialsProvider,
                 Region.AF_SOUTH_1);
     }
@@ -58,8 +61,6 @@ class AwsRequestSigningApacheV5InterceptorTest {
         HttpRequest request = new HttpGet("http://localhost/query?a=b");
         request.addHeader("foo", "bar");
         request.addHeader("content-length", "0");
-
-        HttpCoreContext context = new HttpCoreContext();
 
         interceptor.process(request, ENTITY_DETAILS, null);
 
@@ -93,17 +94,16 @@ class AwsRequestSigningApacheV5InterceptorTest {
     }
 
     @Test
-    void testRepeatableEntity() throws Exception {
+    void signRepeatableEntity() throws Exception {
         HttpPost request = new HttpPost("http://localhost/");
         request.setEntity(new StringEntity("{\"test\": \"val\"}"));
-        HttpCoreContext context = new HttpCoreContext();
         interceptor.process(request, ENTITY_DETAILS, null);
 
         assertTrue(request.getEntity().isRepeatable());
     }
 
     @Test
-    void testEncodedUriSigner() throws Exception {
+    void signEncodedUri() throws Exception {
         String data = "I'm an entity";
         HttpPost request = new HttpPost("http://localhost/foo-2017-02-25%2Cfoo-2017-02-26/_search?a=b");
         request.setEntity(new StringEntity(data));
@@ -120,7 +120,7 @@ class AwsRequestSigningApacheV5InterceptorTest {
     }
 
     @Test
-    void testGzipCompressedContent() throws Exception {
+    void signGzipCompressedContent() throws Exception {
         String data = "data";
         HttpPost request = new HttpPost("http://localhost/query?a=b");
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -140,17 +140,44 @@ class AwsRequestSigningApacheV5InterceptorTest {
                 request.getFirstHeader("signedContentLength").getValue());
     }
 
-    private static final class AddHeaderSigner implements Signer {
+    @Test
+    void signOpenSearchServerlessRequest() throws HttpException, IOException {
+        interceptor = buildInterceptor("aoss", new AssertNoContentLenghtSigner("Signature", "wuzzle"));
+        HttpPost request = new HttpPost("http://localhost/query?a=b");
+        request.addHeader("foo", "bar");
+        request.addHeader("content-length", "10");
+
+        String payload = "{\"test\": \"val\"}";
+        final byte[] payloadData = payload.getBytes();
+        BasicHttpEntity httpEntity = new BasicHttpEntity(new ByteArrayInputStream(payloadData),
+                payloadData.length, ContentType.TEXT_XML);
+        request.setEntity(httpEntity);
+
+        interceptor.process(request, ENTITY_DETAILS, null);
+
+        assertEquals("bar", request.getFirstHeader("foo").getValue());
+        assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
+        assertEquals("10", request.getFirstHeader("content-length").getValue());
+
+        assertEquals(Long.toString(httpEntity.getContentLength()),
+                request.getFirstHeader("signedContentLength").getValue());
+
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        request.getEntity().writeTo(outputStream);
+        assertEquals(payload, outputStream.toString());
+    }
+
+    private static class AddHeaderSigner implements Signer {
         private final String name;
         private final String value;
 
-        private AddHeaderSigner(final String name, final String value) {
+        protected AddHeaderSigner(String name, String value) {
             this.name = name;
             this.value = value;
         }
 
         @Override
-        public SdkHttpFullRequest sign(final SdkHttpFullRequest request, final ExecutionAttributes ea) {
+        public SdkHttpFullRequest sign(SdkHttpFullRequest request, ExecutionAttributes ea) {
             SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
                     .uri(request.getUri())
                     .method(request.method())
@@ -168,12 +195,24 @@ class AwsRequestSigningApacheV5InterceptorTest {
             return requestBuilder.build();
         }
 
-        private static int getContentLength(final InputStream content) {
+        private static int getContentLength(InputStream content) {
             try {
                 return IoUtils.toByteArray(content).length;
             } catch (IOException e) {
                 return -1;
             }
+        }
+    }
+
+    private static final class AssertNoContentLenghtSigner extends AddHeaderSigner {
+        private AssertNoContentLenghtSigner(String name, String value) {
+            super(name, value);
+        }
+
+        @Override
+        public SdkHttpFullRequest sign(SdkHttpFullRequest request, ExecutionAttributes ea) {
+            assertNull(request.headers().get("content-length"));
+            return super.sign(request, ea);
         }
     }
 }

@@ -43,6 +43,7 @@ import software.amazon.awssdk.regions.Region;
  */
 public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestInterceptor {
     private final RequestSigner signer;
+    private final boolean isServerlessOpenSearch;
 
     /**
      * Creates an {@code AwsRequestSigningApacheInterceptor} with the
@@ -54,19 +55,19 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheV5Interceptor(
-            final String service,
-            final Signer signer,
-            final AwsCredentialsProvider awsCredentialsProvider,
-            final Region region) {
+    public AwsRequestSigningApacheV5Interceptor(String service,
+                                                Signer signer,
+                                                AwsCredentialsProvider awsCredentialsProvider,
+                                                Region region) {
         this.signer = new RequestSigner(service, signer, awsCredentialsProvider, region);
+        this.isServerlessOpenSearch = "aoss".equals(service);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void process(final HttpRequest request, final EntityDetails entityDetails, final HttpContext context)
+    public void process(HttpRequest request, EntityDetails entityDetails, HttpContext context)
             throws HttpException, IOException {
         // copy Apache HttpRequest to AWS request
         SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
@@ -85,8 +86,15 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         requestBuilder.headers(headerArrayToMap(request.getHeaders()));
         SdkHttpFullRequest signedRequest = signer.signRequest(requestBuilder.build());
 
-        // copy everything back
-        request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+        if (!isServerlessOpenSearch) {
+            // copy everything back
+            request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+        } else {
+            // copy everything back, don't override headers as not all of them were used for signing the request
+            for (Header header : mapToHeaderArray(signedRequest.headers())) {
+                request.setHeader(header);
+            }
+        }
 
         if (request instanceof ClassicHttpRequest) {
             ClassicHttpRequest httpEntityEnclosingRequest = (ClassicHttpRequest) request;
@@ -100,7 +108,7 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         }
     }
 
-    private static URI buildUri(final HttpRequest request) throws IOException {
+    private static URI buildUri(HttpRequest request) throws IOException {
         try {
             return request.getUri();
         } catch (URISyntaxException ex) {
@@ -108,7 +116,7 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         }
     }
 
-    private static Map<String, List<String>> headerArrayToMap(final Header[] headers) {
+    private Map<String, List<String>> headerArrayToMap(Header[] headers) {
         Map<String, List<String>> headersMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Header header : headers) {
             if (!skipHeader(header)) {
@@ -120,9 +128,24 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         return headersMap;
     }
 
-    private static boolean skipHeader(final Header header) {
+    /**
+     * Ignores {@code Host} headers and {@code Content-Length} as long as it either
+     * contains the value {@code 0} or the service to be signed is Serverless
+     * OpenSearch. Details in AWS documentation below.
+     *
+     * AWS documentation:
+     * <pre><a href="https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-clients.html
+     * #serverless-signing">
+     *   Signing requests to OpenSearch Serverless
+     * </a></pre>
+     *
+     * @param header the header to evaluate
+     * @return {@code true} if header must be ignored {@code false} otherwise
+     */
+    private boolean skipHeader(Header header) {
+               // Strip for Content-Length: 0 and Serverless
         return (HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(header.getName())
-                && "0".equals(header.getValue())) // Strip Content-Length: 0
+                && (("0".equals(header.getValue())) || isServerlessOpenSearch))
                 || HttpHeaders.HOST.equalsIgnoreCase(header.getName()); // Host comes from endpoint
     }
 

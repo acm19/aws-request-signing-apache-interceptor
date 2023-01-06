@@ -159,7 +159,6 @@
 
     <!-- See https://checkstyle.org/config_misc.html -->
     <module name="ArrayTypeStyle"/>
-    <module name="FinalParameters"/>
     <module name="TodoComment"/>
     <module name="UpperEll"/>
 

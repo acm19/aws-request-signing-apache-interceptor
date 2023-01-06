@@ -23,7 +23,7 @@ public class APIGatewaySample extends Sample {
      * @throws IOException
      * @throws ParseException
      */
-    public static void main(final String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException {
         APIGatewaySample apiGatewaySample = new APIGatewaySample(args);
         apiGatewaySample.makeAPIGGetRequest();
     }

@@ -14,12 +14,28 @@ run_sample:
 		-Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" \
 		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION)"
 
+.PHONY: run_serverless_sample
+.SILENT: run_serverless_sample
+run_serverless_sample:
+	mvn test-compile exec:java \
+		-Dexec.classpathScope=test \
+		-Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServerlessSample" \
+		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION)"
+
 .PHONY: run_v5_sample
 .SILENT: run_v5_sample
 run_v5_sample:
 	mvn test-compile exec:java \
 		-Dexec.classpathScope=test \
 		-Dexec.mainClass="io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServiceSample" \
+		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION)"
+
+.PHONY: run_v5_serverless_sample
+.SILENT: run_v5_serverless_sample
+run_v5_serverless_sample:
+	mvn test-compile exec:java \
+		-Dexec.classpathScope=test \
+		-Dexec.mainClass="io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServerlessSample" \
 		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION)"
 
 debug_v5_sample:

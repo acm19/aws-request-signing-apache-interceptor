@@ -31,9 +31,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * Example usage with the OpenSearch low-level REST client:
  *
  * <pre>
- * Aws4Signer signer = Aws4Signer.create();
- *
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
  *         Aws4Signer.create(),
  *         DefaultCredentialsProvider.create(),
@@ -48,7 +46,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * Example usage with the OpenSearch high-level REST client:
  *
  * <pre>
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
  *         Aws4Signer.create(),
  *         DefaultCredentialsProvider.create(),
@@ -71,7 +69,7 @@ public class AmazonOpenSearchServiceSample extends Sample {
      * @throws IOException
      * @throws ParseException
      */
-    public static void main(final String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException {
         AmazonOpenSearchServiceSample sample = new AmazonOpenSearchServiceSample(args);
         sample.makeRequest();
         sample.indexDocument();

@@ -49,10 +49,13 @@ class AwsRequestSigningApacheInterceptorTest {
 
     @BeforeEach
     void createInterceptor() {
+        interceptor = buildInterceptor("servicename", new AddHeaderSigner("Signature", "wuzzle"));
+    }
+
+    private static AwsRequestSigningApacheInterceptor buildInterceptor(String serviceName, AddHeaderSigner signer) {
         AwsCredentialsProvider anonymousCredentialsProvider = StaticCredentialsProvider
                 .create(AnonymousCredentialsProvider.create().resolveCredentials());
-        interceptor = new AwsRequestSigningApacheInterceptor("servicename",
-                new AddHeaderSigner("Signature", "wuzzle"),
+        return new AwsRequestSigningApacheInterceptor(serviceName, signer,
                 anonymousCredentialsProvider,
                 Region.AF_SOUTH_1);
     }
@@ -106,7 +109,7 @@ class AwsRequestSigningApacheInterceptorTest {
     }
 
     @Test
-    void testRepeatableEntity() throws Exception {
+    void signRepeatableEntity() throws Exception {
         HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
                 new MockRequestLine("POST", "/"));
 
@@ -120,7 +123,7 @@ class AwsRequestSigningApacheInterceptorTest {
     }
 
     @Test
-    void testBadRequest() throws Exception {
+    void signBadRequest() throws Exception {
         HttpRequest badRequest = new BasicHttpRequest("GET", "?#!@*%");
         assertThrows(IOException.class, () -> {
             interceptor.process(badRequest, new BasicHttpContext());
@@ -128,7 +131,7 @@ class AwsRequestSigningApacheInterceptorTest {
     }
 
     @Test
-    void testEncodedUriSigner() throws Exception {
+    void signEncodedUriSigner() throws Exception {
         String data = "I'm an entity";
         HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
                 new MockRequestLine("/foo-2017-02-25%2Cfoo-2017-02-26/_search?a=b"));
@@ -149,7 +152,7 @@ class AwsRequestSigningApacheInterceptorTest {
     }
 
     @Test
-    void testGzipCompressedContent() throws Exception {
+    void signGzipCompressedContent() throws Exception {
         String data = "data";
 
         HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
@@ -177,17 +180,39 @@ class AwsRequestSigningApacheInterceptorTest {
                 request.getFirstHeader("signedContentLength").getValue());
     }
 
-    private static final class AddHeaderSigner implements Signer {
+    @Test
+    void signOpenSearchServerlessRequest() throws Exception {
+        interceptor = buildInterceptor("aoss", new AssertNoContentLenghtSigner("Signature", "wuzzle"));
+        String data = "I'm an entity";
+        HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
+                new MockRequestLine("/foo-2017-02-25%2Cfoo-2017-02-26/_search?a=b"));
+        request.setEntity(new StringEntity(data));
+        request.addHeader("foo", "bar");
+        request.addHeader("content-length", "10");
+
+        HttpCoreContext context = new HttpCoreContext();
+        context.setTargetHost(HttpHost.create("localhost"));
+
+        interceptor.process(request, context);
+
+        assertEquals("bar", request.getFirstHeader("foo").getValue());
+        assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
+        assertEquals("10", request.getFirstHeader("content-length").getValue());
+        assertEquals("/foo-2017-02-25%2Cfoo-2017-02-26/_search", request.getFirstHeader("resourcePath").getValue());
+        assertEquals(Long.toString(data.length()), request.getFirstHeader("signedContentLength").getValue());
+    }
+
+    private static class AddHeaderSigner implements Signer {
         private final String name;
         private final String value;
 
-        private AddHeaderSigner(final String name, final String value) {
+        protected AddHeaderSigner(String name, String value) {
             this.name = name;
             this.value = value;
         }
 
         @Override
-        public SdkHttpFullRequest sign(final SdkHttpFullRequest request, final ExecutionAttributes ea) {
+        public SdkHttpFullRequest sign(SdkHttpFullRequest request, ExecutionAttributes ea) {
             SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
                     .uri(request.getUri())
                     .method(request.method())
@@ -205,7 +230,7 @@ class AwsRequestSigningApacheInterceptorTest {
             return requestBuilder.build();
         }
 
-        private static int getContentLength(final InputStream content) {
+        private static int getContentLength(InputStream content) {
             try {
                 return IoUtils.toByteArray(content).length;
             } catch (IOException e) {
@@ -214,15 +239,27 @@ class AwsRequestSigningApacheInterceptorTest {
         }
     }
 
+    private static final class AssertNoContentLenghtSigner extends AddHeaderSigner {
+        private AssertNoContentLenghtSigner(String name, String value) {
+            super(name, value);
+        }
+
+        @Override
+        public SdkHttpFullRequest sign(SdkHttpFullRequest request, ExecutionAttributes ea) {
+            assertNull(request.headers().get("content-length"));
+            return super.sign(request, ea);
+        }
+    }
+
     private static class MockRequestLine implements RequestLine {
         private final String uri;
         private final String method;
 
-        MockRequestLine(final String uri) {
+        MockRequestLine(String uri) {
             this("POST", uri);
         }
 
-        MockRequestLine(final String method, final String uri) {
+        MockRequestLine(String method, String uri) {
             this.method = method;
             this.uri = uri;
         }
