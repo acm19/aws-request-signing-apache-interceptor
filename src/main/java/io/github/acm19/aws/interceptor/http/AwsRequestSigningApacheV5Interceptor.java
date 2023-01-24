@@ -82,7 +82,10 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
             }
         }
 
-        requestBuilder.headers(headerArrayToMap(request.getHeaders()));
+        Map<String, List<String>> headers = headerArrayToMap(request.getHeaders());
+        // adds a hash of the request payload when signing
+        headers.put("x-amz-content-sha256", Collections.singletonList("required"));
+        requestBuilder.headers(headers);
         SdkHttpFullRequest signedRequest = signer.signRequest(requestBuilder.build());
 
         // copy everything back

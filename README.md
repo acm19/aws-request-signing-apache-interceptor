@@ -5,7 +5,7 @@
 
 An AWS request signing interceptor for arbitrary HTTP requests. It supports both [Apache HTTP Client](https://search.maven.org/artifact/org.apache.httpcomponents/httpclient) and [Apache HTTP Client V5](https://search.maven.org/artifact/org.apache.httpcomponents.client5/httpclient5).
 
-This library enables you to sign requests to any service that leverages SigV4, and thus access any AWS Service or APIG-backed service.
+This library enables you to sign requests to any service that leverages SigV4, and thus access any AWS Service or APIG-backed service, including Amazon managed OpenSearch and OpenSearch Serverless.
 
 This library is based on [AWS Interceptor](https://github.com/awslabs/aws-request-signing-apache-interceptor), but using AWS SDK 2.x.
 
@@ -110,13 +110,13 @@ export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 export AWS_SESSION_TOKEN=
 
-mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://...us-west-2.es.amazonaws.com --region=us-west-2"
+mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://...us-west-2.es.amazonaws.com --region=us-west-2 --service=es"
 ```
 
 Alternatively use `make` as follows:
 
 ```
-ENDPOINT=<your-endpoint> REGION=<your-region> make run_sample
+ENDPOINT=<your-endpoint> SERVICE=es REGION=<your-region> SERVICE=es make run_sample
 ```
 
 See [examples](src/test/java/io/github/acm19/aws/interceptor/test) for more valid requests.
@@ -130,13 +130,13 @@ export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 export AWS_SESSION_TOKEN=
 
-mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://...us-west-2.es.amazonaws.com --region=us-west-2"
+mvn test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass="io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServiceSample" -Dexec.args="--endpoint=https://...us-west-2.aoss.amazonaws.com --region=us-west-2 --service=aoss"
 ```
 
 Alternatively use `make` as follows:
 
 ```
-ENDPOINT=<your-endpoint> REGION=<your-region> make run_v5_sample
+ENDPOINT=<your-endpoint> REGION=<your-region> SERVICE=aoss make run_v5_sample
 ```
 
 See [examples](src/test/java/io/github/acm19/aws/interceptorv5/test) for more valid requests.

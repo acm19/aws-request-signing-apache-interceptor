@@ -1,5 +1,6 @@
 REGION?=us-east-1
 ENDPOINT?=http://my-domain.us-east-1.opensearch.localhost.localstack.cloud:4566
+SERVICE?=es
 
 .PHONY: verify
 .SILENT: verify
@@ -12,7 +13,7 @@ run_sample:
 	mvn test-compile exec:java \
 		-Dexec.classpathScope=test \
 		-Dexec.mainClass="io.github.acm19.aws.interceptor.test.AmazonOpenSearchServiceSample" \
-		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION)"
+		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION) --service=$(SERVICE)"
 
 .PHONY: run_v5_sample
 .SILENT: run_v5_sample
@@ -20,13 +21,13 @@ run_v5_sample:
 	mvn test-compile exec:java \
 		-Dexec.classpathScope=test \
 		-Dexec.mainClass="io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServiceSample" \
-		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION)"
+		-Dexec.args="--endpoint=$(ENDPOINT) --region=$(REGION) --service=$(SERVICE)"
 
 debug_v5_sample:
 	mvn exec:exec -Dexec.executable="java" -Dexec.classpathScope=test \
 		-Dexec.args="-classpath %classpath -Xdebug \
 				-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 \
-				io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServiceSample --endpoint=$(ENDPOINT) --region=$(REGION)"
+				io.github.acm19.aws.interceptorv5.test.AmazonOpenSearchServiceSample --endpoint=$(ENDPOINT) --region=$(REGION) --service=$(SERVICE)"
 
 .PHONY: validate_renovate_config
 .SILENT: validate_renovate_config

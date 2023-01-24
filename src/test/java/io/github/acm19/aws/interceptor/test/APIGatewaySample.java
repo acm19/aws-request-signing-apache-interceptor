@@ -14,7 +14,7 @@ import org.apache.http.client.methods.HttpGet;
 
 public class APIGatewaySample extends Sample {
     APIGatewaySample(final String[] args) throws ParseException {
-        super("execute-api", args);
+        super(args);
     }
 
     /**

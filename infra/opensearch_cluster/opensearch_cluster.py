@@ -10,7 +10,7 @@ class OpenSearchStack(Stack):
 
         open_search_cluster = aws_opensearchservice.Domain(self,
                                                            "InterceptorTest",
-                                                           version=EngineVersion.OPENSEARCH_1_2,
+                                                           version=EngineVersion.OPENSEARCH_2_3,
                                                            capacity=aws_opensearchservice.CapacityConfig(
                                                                data_node_instance_type="t3.small.search"
                                                            ),
