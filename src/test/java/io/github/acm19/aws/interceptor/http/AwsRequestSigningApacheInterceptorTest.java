@@ -71,6 +71,7 @@ class AwsRequestSigningApacheInterceptorTest {
         assertEquals("bar", request.getFirstHeader("foo").getValue());
         assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
         assertNull(request.getFirstHeader("content-length"));
+        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
     }
 
     @Test
@@ -96,6 +97,7 @@ class AwsRequestSigningApacheInterceptorTest {
 
         assertEquals("bar", request.getFirstHeader("foo").getValue());
         assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
+        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
 
         assertEquals(Long.toString(httpEntity.getContentLength()),
                 request.getFirstHeader("signedContentLength").getValue());
@@ -143,6 +145,7 @@ class AwsRequestSigningApacheInterceptorTest {
 
         assertEquals("bar", request.getFirstHeader("foo").getValue());
         assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
+        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
         assertNull(request.getFirstHeader("content-length"));
         assertEquals("/foo-2017-02-25%2Cfoo-2017-02-26/_search", request.getFirstHeader("resourcePath").getValue());
         assertEquals(Long.toString(data.length()), request.getFirstHeader("signedContentLength").getValue());
@@ -172,6 +175,7 @@ class AwsRequestSigningApacheInterceptorTest {
         interceptor.process(request, context);
 
         assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
+        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
 
         assertEquals(Long.toString(entity.getContentLength()),
                 request.getFirstHeader("signedContentLength").getValue());

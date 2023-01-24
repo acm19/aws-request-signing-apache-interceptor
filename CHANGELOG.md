@@ -1,5 +1,6 @@
-### 2.2.1 (Next)
+### 2.3.0 (Next)
 
+* [#94](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/94): Add support for OpenSearch Serverless - [@dblock](https://github.com/dblock).
 * [#92](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/92): Make samples compatible with OpenSearch 2.x - [@dblock](https://github.com/dblock).
 
 ### 2.2.0 (2022/10/02)

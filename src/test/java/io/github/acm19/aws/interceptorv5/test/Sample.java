@@ -39,8 +39,7 @@ class Sample {
     protected Region region;
     protected String service;
 
-    Sample(final String service, final String[] args) throws ParseException {
-        this.service = service;
+    Sample(final String[] args) throws ParseException {
         parseOptions(args);
     }
 
@@ -51,7 +50,7 @@ class Sample {
     }
 
     public static void main(final String[] args) throws IOException, ParseException {
-        Sample sampleClass = new Sample("", args);
+        Sample sampleClass = new Sample(args);
         sampleClass.makeGetRequest();
         sampleClass.makePostRequest();
     }
@@ -59,12 +58,14 @@ class Sample {
     private void parseOptions(final String[] args) throws ParseException {
         Options options = new Options()
                 .addRequiredOption(null, "endpoint", true, "OpenSearch endpoint")
-                .addRequiredOption(null, "region", true, "AWS signing region");
+                .addRequiredOption(null, "region", true, "AWS signing region")
+                .addOption(null, "service", true, "AWS signing service, default is 'es'");
 
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
             this.endpoint = cmd.getOptionValue("endpoint");
             this.region = Region.of(cmd.getOptionValue("region"));
+            this.service = cmd.getOptionValue("service", "es");
         } catch (ParseException e) {
             System.err.println(e.getMessage());
             new HelpFormatter().printHelp(

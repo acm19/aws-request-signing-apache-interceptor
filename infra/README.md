@@ -6,13 +6,13 @@ This project creates an OpenSearch cluster on AWS for development purposes. Its 
 To manually create a virtualenv and install the dependencies on MacOS and Linux:
 
 ```
-make .venv
+make venv
 ```
 
 After the init process completes and the virtualenv is created, you can use the following step to activate your virtualenv.
 
 ```
-source .venv/bin/activate
+source ./venv/bin/activate
 ```
 
 At this point you can now synthesise the CloudFormation template for this code.

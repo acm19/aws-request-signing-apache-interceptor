@@ -98,7 +98,11 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
                 requestBuilder.contentStreamProvider(() -> new ByteArrayInputStream(outputStream.toByteArray()));
             }
         }
-        requestBuilder.headers(headerArrayToMap(request.getAllHeaders()));
+
+        Map<String, List<String>> headers = headerArrayToMap(request.getAllHeaders());
+        // adds a hash of the request payload when signing
+        headers.put("x-amz-content-sha256", Collections.singletonList("required"));
+        requestBuilder.headers(headers);
         SdkHttpFullRequest signedRequest = signer.signRequest(requestBuilder.build());
 
         // copy everything back
