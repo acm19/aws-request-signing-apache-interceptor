@@ -17,7 +17,7 @@ Add [io.github.acm19.aws-request-signing-apache-interceptor](https://repo1.maven
 <dependency>
   <groupId>io.github.acm19</groupId>
   <artifactId>aws-request-signing-apache-interceptor</artifactId>
-  <version>2.2.0</version>
+  <version>2.3.0</version>
 </dependency>
 ```
 
