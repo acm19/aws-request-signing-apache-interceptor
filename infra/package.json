@@ -2,7 +2,7 @@
   "name": "aws-request-signing-apache-interceptor",
   "version": "1.0.0",
   "devDependencies": {
-    "aws-cdk": "2.61.1"
+    "aws-cdk": "2.63.0"
   },
   "author": "acm19"
 }
