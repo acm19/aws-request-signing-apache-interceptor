@@ -4,7 +4,7 @@ There are no hard rules about when to release `aws-request-signing-apache-interc
 
 ### For Maintainers
 
-To release manually run `Prepare Release` in the `master` branch. Make sure no commits are pushed to `master` during the time this job is running to avoid race conditions.
+To release manually run the [Prepare Release](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/prepare-release.yml) workflow in the `master` branch. Make sure no commits are pushed to `master` during the time this job is running to avoid race conditions. This workflow will automatically trigger [Publish Release](https://github.com/acm19/aws-request-signing-apache-interceptor/actions/workflows/publish-release.yml).
 
 #### Versioning
 
