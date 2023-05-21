@@ -20,7 +20,6 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -104,17 +103,18 @@ class Sample {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "DEBUG");
-        CloseableHttpClient httpClient = signingClient();
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
-            System.out.println(response.getStatusLine());
-            System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
-            switch (response.getStatusLine().getStatusCode()) {
-                case HttpStatus.SC_OK:
-                case HttpStatus.SC_CREATED:
-                    break;
-                default:
-                    throw new RuntimeException(response.getStatusLine().getReasonPhrase());
-            }
+        try (CloseableHttpClient httpClient = signingClient()) {
+            httpClient.execute(request, response -> {
+                System.out.println(response.getStatusLine());
+                System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
+                switch (response.getStatusLine().getStatusCode()) {
+                    case HttpStatus.SC_OK:
+                    case HttpStatus.SC_CREATED:
+                        return true;
+                    default:
+                        throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+                }
+            });
         }
     }
 

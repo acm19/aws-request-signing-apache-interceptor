@@ -5,7 +5,17 @@ SERVICE?=es
 .PHONY: verify
 .SILENT: verify
 verify:
-	mvn clean verify
+	mvn verify
+
+
+.PHONY: checkstyle
+.SILENT: checkstyle
+checkstyle:
+	mvn validate -Pcheckstyle
+
+.PHONY: run_all_samples
+.SILENT: run_all_samples
+run_all_samples: run_sample run_v5_sample
 
 .PHONY: run_sample
 .SILENT: run_sample

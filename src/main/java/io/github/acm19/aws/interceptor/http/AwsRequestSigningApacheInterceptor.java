@@ -51,11 +51,10 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheInterceptor(
-            final String service,
-            final Signer signer,
-            final AwsCredentialsProvider awsCredentialsProvider,
-            final Region region) {
+    public AwsRequestSigningApacheInterceptor(String service,
+                                              Signer signer,
+                                              AwsCredentialsProvider awsCredentialsProvider,
+                                              Region region) {
         this.signer = new RequestSigner(service, signer, awsCredentialsProvider, region);
     }
 
@@ -69,11 +68,10 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheInterceptor(
-            final String service,
-            final Signer signer,
-            final AwsCredentialsProvider awsCredentialsProvider,
-            final String region) {
+    public AwsRequestSigningApacheInterceptor(String service,
+                                              Signer signer,
+                                              AwsCredentialsProvider awsCredentialsProvider,
+                                              String region) {
         this(service, signer, awsCredentialsProvider, Region.of(region));
     }
 
@@ -81,7 +79,7 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * {@inheritDoc}
      */
     @Override
-    public void process(final HttpRequest request, final HttpContext context)
+    public void process(HttpRequest request, HttpContext context)
             throws HttpException, IOException {
         URI requestUri = RequestSigner.buildUri(context, request.getRequestLine().getUri());
 
@@ -93,8 +91,15 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
         if (request instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest httpEntityEnclosingRequest = (HttpEntityEnclosingRequest) request;
             if (httpEntityEnclosingRequest.getEntity() != null) {
-                final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 httpEntityEnclosingRequest.getEntity().writeTo(outputStream);
+                if (!httpEntityEnclosingRequest.getEntity().isRepeatable()) {
+                    // copy back the entity, so it can be read again
+                    BasicHttpEntity entity = new BasicHttpEntity();
+                    entity.setContent(new ByteArrayInputStream(outputStream.toByteArray()));
+                    // wrap into repeatable entity to support retries
+                    httpEntityEnclosingRequest.setEntity(new BufferedHttpEntity(entity));
+                }
                 requestBuilder.contentStreamProvider(() -> new ByteArrayInputStream(outputStream.toByteArray()));
             }
         }
@@ -107,21 +112,9 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
 
         // copy everything back
         request.setHeaders(mapToHeaderArray(signedRequest.headers()));
-
-        if (request instanceof HttpEntityEnclosingRequest) {
-            HttpEntityEnclosingRequest httpEntityEnclosingRequest = (HttpEntityEnclosingRequest) request;
-            if (httpEntityEnclosingRequest.getEntity() != null) {
-                BasicHttpEntity basicHttpEntity = new BasicHttpEntity();
-                basicHttpEntity.setContent(signedRequest.contentStreamProvider()
-                        .orElseThrow(() -> new IllegalStateException("There must be content"))
-                        .newStream());
-                // wrap into repeatable entity to support retries
-                httpEntityEnclosingRequest.setEntity(new BufferedHttpEntity(basicHttpEntity));
-            }
-        }
     }
 
-    private static Map<String, List<String>> headerArrayToMap(final Header[] headers) {
+    private static Map<String, List<String>> headerArrayToMap(Header[] headers) {
         Map<String, List<String>> headersMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Header header : headers) {
             if (!skipHeader(header)) {
@@ -133,13 +126,13 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
         return headersMap;
     }
 
-    private static boolean skipHeader(final Header header) {
+    private static boolean skipHeader(Header header) {
         return (HTTP.CONTENT_LEN.equalsIgnoreCase(header.getName())
                 && "0".equals(header.getValue())) // Strip Content-Length: 0
                 || HTTP.TARGET_HOST.equalsIgnoreCase(header.getName()); // Host comes from endpoint
     }
 
-    private static Header[] mapToHeaderArray(final Map<String, List<String>> mapHeaders) {
+    private static Header[] mapToHeaderArray(Map<String, List<String>> mapHeaders) {
         Header[] headers = new Header[mapHeaders.size()];
         int i = 0;
         for (Map.Entry<String, List<String>> headerEntry : mapHeaders.entrySet()) {

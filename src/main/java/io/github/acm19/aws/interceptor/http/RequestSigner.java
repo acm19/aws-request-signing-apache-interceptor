@@ -48,10 +48,10 @@ class RequestSigner {
      * @param awsCredentialsProvider
      * @param region
      */
-    RequestSigner(final String service,
-                         final Signer signer,
-                         final AwsCredentialsProvider awsCredentialsProvider,
-                         final Region region) {
+    RequestSigner(String service,
+                  Signer signer,
+                  AwsCredentialsProvider awsCredentialsProvider,
+                  Region region) {
         this.service = service;
         this.signer = signer;
         this.awsCredentialsProvider = awsCredentialsProvider;
@@ -67,7 +67,7 @@ class RequestSigner {
      * @return signed request
      * @see Signer#sign
      */
-    SdkHttpFullRequest signRequest(final SdkHttpFullRequest request) {
+    SdkHttpFullRequest signRequest(SdkHttpFullRequest request) {
         ExecutionAttributes attributes = new ExecutionAttributes();
         attributes.putAttribute(AwsSignerExecutionAttribute.AWS_CREDENTIALS,
                                 awsCredentialsProvider.resolveCredentials());
@@ -86,7 +86,7 @@ class RequestSigner {
      * @return an {@link URI} from an HTTP context
      * @throws IOException if the {@code uri} syntax is invalid
      */
-    static URI buildUri(final HttpContext context, final String uri) throws IOException {
+    static URI buildUri(HttpContext context, String uri) throws IOException {
         try {
             URIBuilder uriBuilder = new URIBuilder(uri);
 

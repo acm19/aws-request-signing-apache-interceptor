@@ -62,8 +62,8 @@ import org.apache.http.entity.StringEntity;
  *                 .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
  * </pre>
  */
-public class AmazonOpenSearchServiceSample extends Sample {
-    AmazonOpenSearchServiceSample(final String[] args) throws ParseException {
+public final class AmazonOpenSearchServiceSample extends Sample {
+    private AmazonOpenSearchServiceSample(final String[] args) throws ParseException {
         super(args);
     }
 
