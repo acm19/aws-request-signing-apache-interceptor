@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.cli.ParseException;
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
+import org.apache.hc.client5.http.async.methods.SimpleRequestBuilder;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -60,8 +62,8 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  *                 .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
  * </pre>
  */
-public class AmazonOpenSearchServiceSample extends Sample {
-    AmazonOpenSearchServiceSample(final String[] args) throws ParseException {
+public final class AmazonOpenSearchServiceSample extends Sample {
+    private AmazonOpenSearchServiceSample(String[] args) throws ParseException {
         super(args);
     }
 
@@ -71,13 +73,15 @@ public class AmazonOpenSearchServiceSample extends Sample {
      * @throws IOException
      * @throws ParseException
      */
-    public static void main(final String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException {
         AmazonOpenSearchServiceSample sample = new AmazonOpenSearchServiceSample(args);
         sample.makeRequest();
         sample.createIndex();
         try {
             sample.indexDocument();
             sample.indexDocumentWithCompressionEnabled();
+            // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/101
+            // sample.indexDocumentAsynchronously();
             // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/20
             // sample.indexDocumentWithChunkedTransferEncoding();
             // sample.indexDocumentWithChunkedTransferEncodingCompressionEnabled();
@@ -147,5 +151,15 @@ public class AmazonOpenSearchServiceSample extends Sample {
         GzipCompressingEntity entity = new GzipCompressingEntity(new StringEntity(payload));
         httpPost.setEntity(entity);
         logRequest(httpPost);
+    }
+
+    private void indexDocumentAsynchronously() throws IOException {
+        String payload = "{\"test\": \"ayncVal\"}";
+        SimpleHttpRequest httpPost = SimpleRequestBuilder.post()
+                .setUri(endpoint + "/index_name/_doc")
+                .setBody(payload, ContentType.APPLICATION_JSON)
+                .build();
+
+        logAsyncRequest(httpPost);
     }
 }

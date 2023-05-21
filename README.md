@@ -29,7 +29,6 @@ To sign requests made with pre-5 versions of the clients the following intercept
 import java.io.IOException;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -52,9 +51,10 @@ final class Example {
                 .addInterceptorLast(interceptor)
                 .build()) {
             HttpGet httpGet = new HttpGet("https://...");
-            CloseableHttpResponse response = client.execute(httpGet);
-            System.out.println(response.getStatusLine());
-            System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
+            httpClient.execute(request, response -> {
+                System.out.println(response.getStatusLine());
+                System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
+            });
         }
     }
 }
@@ -70,7 +70,6 @@ import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheV5Interceptor
 import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -91,9 +90,10 @@ final class Example {
                 .addRequestInterceptorLast(interceptor)
                 .build()) {
             HttpGet httpGet = new HttpGet("https://...");
-            CloseableHttpResponse response = client.execute(httpGet);
-            System.out.println(response.getCode());
-            System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
+            httpClient.execute(request, response -> {
+                System.out.println(response.getCode());
+                System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
+            });
         }
     }
 }

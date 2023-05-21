@@ -27,4 +27,4 @@ jobs:
       - name: Run tests with Maven
         run: mvn --batch-mode verify
       - name: Validate checkstyle
-        run: mvn validate -Pcheckstyle
+        run: mvn --batch-mode validate -Pcheckstyle

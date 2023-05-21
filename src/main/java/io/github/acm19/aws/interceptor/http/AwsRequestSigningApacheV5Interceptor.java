@@ -54,11 +54,10 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
      * @param awsCredentialsProvider source of AWS credentials for signing
      * @param region                 signing region
      */
-    public AwsRequestSigningApacheV5Interceptor(
-            final String service,
-            final Signer signer,
-            final AwsCredentialsProvider awsCredentialsProvider,
-            final Region region) {
+    public AwsRequestSigningApacheV5Interceptor(String service,
+                                                Signer signer,
+                                                AwsCredentialsProvider awsCredentialsProvider,
+                                                Region region) {
         this.signer = new RequestSigner(service, signer, awsCredentialsProvider, region);
     }
 
@@ -66,7 +65,7 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
      * {@inheritDoc}
      */
     @Override
-    public void process(final HttpRequest request, final EntityDetails entityDetails, final HttpContext context)
+    public void process(HttpRequest request, EntityDetails entityDetails, HttpContext context)
             throws HttpException, IOException {
         // copy Apache HttpRequest to AWS request
         SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
@@ -76,8 +75,15 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         if (request instanceof ClassicHttpRequest) {
             ClassicHttpRequest classicHttpRequest = (ClassicHttpRequest) request;
             if (classicHttpRequest.getEntity() != null) {
-                final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 classicHttpRequest.getEntity().writeTo(outputStream);
+                if (!classicHttpRequest.getEntity().isRepeatable()) {
+                    // copy back the entity, so it can be read again
+                    BasicHttpEntity entity = new BasicHttpEntity(new ByteArrayInputStream(outputStream.toByteArray()),
+                                                                 ContentType.parse(entityDetails.getContentType()));
+                    // wrap into repeatable entity to support retries
+                    classicHttpRequest.setEntity(new BufferedHttpEntity(entity));
+                }
                 requestBuilder.contentStreamProvider(() -> new ByteArrayInputStream(outputStream.toByteArray()));
             }
         }
@@ -90,20 +96,9 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
 
         // copy everything back
         request.setHeaders(mapToHeaderArray(signedRequest.headers()));
-
-        if (request instanceof ClassicHttpRequest) {
-            ClassicHttpRequest httpEntityEnclosingRequest = (ClassicHttpRequest) request;
-            if (httpEntityEnclosingRequest.getEntity() != null) {
-                BasicHttpEntity basicHttpEntity = new BasicHttpEntity(signedRequest.contentStreamProvider()
-                        .orElseThrow(() -> new IllegalStateException("There must be content"))
-                        .newStream(), ContentType.parse(entityDetails.getContentType()));
-                // wrap into repeatable entity to support retries
-                httpEntityEnclosingRequest.setEntity(new BufferedHttpEntity(basicHttpEntity));
-            }
-        }
     }
 
-    private static URI buildUri(final HttpRequest request) throws IOException {
+    private static URI buildUri(HttpRequest request) throws IOException {
         try {
             return request.getUri();
         } catch (URISyntaxException ex) {
@@ -111,7 +106,7 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         }
     }
 
-    private static Map<String, List<String>> headerArrayToMap(final Header[] headers) {
+    private static Map<String, List<String>> headerArrayToMap(Header[] headers) {
         Map<String, List<String>> headersMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Header header : headers) {
             if (!skipHeader(header)) {
@@ -123,13 +118,13 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         return headersMap;
     }
 
-    private static boolean skipHeader(final Header header) {
+    private static boolean skipHeader(Header header) {
         return (HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(header.getName())
                 && "0".equals(header.getValue())) // Strip Content-Length: 0
                 || HttpHeaders.HOST.equalsIgnoreCase(header.getName()); // Host comes from endpoint
     }
 
-    private static Header[] mapToHeaderArray(final Map<String, List<String>> mapHeaders) {
+    private static Header[] mapToHeaderArray(Map<String, List<String>> mapHeaders) {
         Header[] headers = new Header[mapHeaders.size()];
         int i = 0;
         for (Map.Entry<String, List<String>> headerEntry : mapHeaders.entrySet()) {

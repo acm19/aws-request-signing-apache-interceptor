@@ -1,4 +1,5 @@
 ### 2.3.1 (Next)
+* [#104](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/104): Make request interceptors simpler and other improvements - [@acm19](https://github.com/acm19).
 
 ### 2.3.0 (2023/01/26)
 
