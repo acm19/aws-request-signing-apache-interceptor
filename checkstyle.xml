@@ -159,7 +159,9 @@
 
     <!-- See https://checkstyle.org/config_misc.html -->
     <module name="ArrayTypeStyle"/>
-    <module name="TodoComment"/>
+    <module name="TodoComment">
+      <property name="format" value="([Tt][Oo][Dd][Oo])|([Ff][Ii][Xx][Mm][Ee])"/>
+    </module>
     <module name="UpperEll"/>
 
     <!-- https://checkstyle.org/config_filters.html#SuppressionXpathFilter -->

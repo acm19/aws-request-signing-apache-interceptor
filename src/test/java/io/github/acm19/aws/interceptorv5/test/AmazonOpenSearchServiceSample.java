@@ -104,7 +104,8 @@ public final class AmazonOpenSearchServiceSample extends Sample {
     }
 
     private void makeRequest() throws IOException {
-        // todo: https://github.com/acm19/aws-request-signing-apache-interceptor/issues/95
+        // Remove when GET support is added to OpenSearch Serverless:
+        // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/95
         if (!service.equals("aoss")) {
             logRequest(new HttpGet(endpoint));
         }
