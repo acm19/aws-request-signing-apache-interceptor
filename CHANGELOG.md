@@ -1,4 +1,5 @@
 ### 2.3.1 (Next)
+* [#107](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/107): Automate the release fully by auto closing it - [@acm19](https://github.com/acm19).
 * [#106](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/106): Enforce stricter TODO comments checks - [@acm19](https://github.com/acm19).
 * [#104](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/104): Make request interceptors simpler and other improvements - [@acm19](https://github.com/acm19).
 
