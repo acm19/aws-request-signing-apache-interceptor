@@ -28,11 +28,11 @@ jobs:
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
     - name: Extract project version
       id: project
-      run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+      run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package
     - name: Publish to Maven central
-      run: mvn -B deploy --file pom.xml -Pgpg-sign
+      run: mvn -B deploy -P release -DskipTests=true
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
