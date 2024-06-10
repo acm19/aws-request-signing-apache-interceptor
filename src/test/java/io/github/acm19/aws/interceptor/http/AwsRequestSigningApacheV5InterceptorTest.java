@@ -17,6 +17,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPOutputStream;
+
+import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
+import org.apache.hc.client5.http.async.methods.SimpleRequestBuilder;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
@@ -91,6 +94,30 @@ class AwsRequestSigningApacheV5InterceptorTest {
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         request.getEntity().writeTo(outputStream);
+        assertEquals(payload, outputStream.toString());
+    }
+
+    @Test
+    void signSimplePostRequest() throws Exception {
+        String payload = "{\"test\": \"val\"}";
+        SimpleHttpRequest request = SimpleRequestBuilder.post()
+            .setUri("http://localhost/query?a=b")
+            .addHeader("foo", "bar")
+            .setBody(payload, ContentType.TEXT_XML)
+            .build();
+
+        interceptor.process(request, ENTITY_DETAILS, null);
+
+        assertEquals("bar", request.getFirstHeader("foo").getValue());
+        assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
+        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
+
+        assertEquals(Long.toString(request.getBodyBytes().length),
+            request.getFirstHeader("signedContentLength").getValue());
+
+
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(request.getBodyBytes());
         assertEquals(payload, outputStream.toString());
     }
 
