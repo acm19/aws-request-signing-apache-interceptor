@@ -34,7 +34,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
@@ -42,7 +42,7 @@ final class Example {
     public static void main(String[] args) throws ClientProtocolException, IOException {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
                 "service",
-                Aws4Signer.create(),
+                AwsV4HttpSigner.create(),
                 DefaultCredentialsProvider.create(),
                 Region.US_WEST_2
         );
@@ -73,7 +73,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
@@ -81,7 +81,7 @@ final class Example {
     public static void main(String[] args) throws ClientProtocolException, IOException {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
                 "service",
-                Aws4Signer.create(),
+                AwsV4HttpSigner.create(),
                 DefaultCredentialsProvider.create(),
                 Region.US_WEST_2
         );

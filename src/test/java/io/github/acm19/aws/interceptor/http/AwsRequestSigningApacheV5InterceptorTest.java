@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
 import java.util.zip.GZIPOutputStream;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -32,10 +33,14 @@ import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
-import software.amazon.awssdk.core.signer.Signer;
 import software.amazon.awssdk.http.ContentStreamProvider;
 import software.amazon.awssdk.http.SdkHttpFullRequest;
+import software.amazon.awssdk.http.auth.aws.internal.signer.DefaultAwsV4HttpSigner;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
+import software.amazon.awssdk.http.auth.spi.signer.AsyncSignRequest;
+import software.amazon.awssdk.http.auth.spi.signer.AsyncSignedRequest;
+import software.amazon.awssdk.http.auth.spi.signer.SignRequest;
+import software.amazon.awssdk.http.auth.spi.signer.SignedRequest;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
@@ -144,7 +149,9 @@ class AwsRequestSigningApacheV5InterceptorTest {
                 request.getFirstHeader("signedContentLength").getValue());
     }
 
-    private static final class AddHeaderSigner implements Signer {
+    private static final class AddHeaderSigner implements AwsV4HttpSigner {
+        private final AwsV4HttpSigner signer = new DefaultAwsV4HttpSigner();
+
         private final String name;
         private final String value;
 
@@ -154,22 +161,40 @@ class AwsRequestSigningApacheV5InterceptorTest {
         }
 
         @Override
-        public SdkHttpFullRequest sign(final SdkHttpFullRequest request, final ExecutionAttributes ea) {
-            SdkHttpFullRequest.Builder requestBuilder = SdkHttpFullRequest.builder()
-                    .uri(request.getUri())
-                    .method(request.method())
-                    .headers(request.headers())
+        public SignedRequest sign(SignRequest signRequest) {
+            SdkHttpFullRequest.Builder request = SdkHttpFullRequest.builder()
+                    .uri(signRequest.request().getUri())
+                    .method(signRequest.request().method())
+                    .headers(signRequest.request().headers())
                     .appendHeader(name, value)
-                    .appendHeader("resourcePath", request.getUri().getRawPath());
+                    .appendHeader("resourcePath", signRequest.request().getUri().getRawPath());
 
-            if (request.contentStreamProvider().isPresent()) {
-                ContentStreamProvider contentStreamProvider = request.contentStreamProvider().get();
-                requestBuilder.contentStreamProvider(contentStreamProvider);
-                requestBuilder.appendHeader("signedContentLength",
-                        Long.toString(getContentLength(contentStreamProvider.newStream())));
+            if (signRequest.payload().isPresent()) {
+                ContentStreamProvider contentStreamProvider = (ContentStreamProvider) signRequest.payload().get();
+                InputStream payloadStream = contentStreamProvider.newStream();
+                ContentStreamProvider newContentStreamProvider = ContentStreamProvider.fromInputStream(payloadStream);
+
+                request
+                        .contentStreamProvider(newContentStreamProvider)
+                        .appendHeader("signedContentLength",
+                                Long.toString(getContentLength(newContentStreamProvider.newStream())))
+                        .build();
             }
 
-            return requestBuilder.build();
+            SdkHttpFullRequest requestBuilt = request.build();
+
+            SignedRequest signedRequest =
+                signer.sign(r -> r
+                        .identity(
+                                AnonymousCredentialsProvider.create().resolveCredentials())
+                        .request(requestBuilt)
+                        .payload(requestBuilt.contentStreamProvider().orElse(null))
+                        .putProperty(AwsV4HttpSigner.SERVICE_SIGNING_NAME, "servicename")
+                        .putProperty(AwsV4HttpSigner.REGION_NAME, "us-west-2")
+                        .putProperty(AwsV4HttpSigner.DOUBLE_URL_ENCODE, false)
+                        .putProperty(AwsV4HttpSigner.NORMALIZE_PATH, false));
+
+            return signedRequest;
         }
 
         private static int getContentLength(final InputStream content) {
@@ -178,6 +203,11 @@ class AwsRequestSigningApacheV5InterceptorTest {
             } catch (IOException e) {
                 return -1;
             }
+        }
+
+        @Override
+        public CompletableFuture<AsyncSignedRequest> signAsync(AsyncSignRequest asyncSignRequest) {
+            return null;
         }
     }
 }

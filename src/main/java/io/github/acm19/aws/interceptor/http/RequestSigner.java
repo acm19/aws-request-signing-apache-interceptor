@@ -17,10 +17,11 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.signer.AwsSignerExecutionAttribute;
-import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
-import software.amazon.awssdk.core.signer.Signer;
 import software.amazon.awssdk.http.SdkHttpFullRequest;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
+import software.amazon.awssdk.http.auth.spi.signer.HttpSigner;
+import software.amazon.awssdk.http.auth.spi.signer.SignedRequest;
+import software.amazon.awssdk.identity.spi.AwsCredentialsIdentity;
 import software.amazon.awssdk.regions.Region;
 
 class RequestSigner {
@@ -31,7 +32,7 @@ class RequestSigner {
     /**
      * A signer implementation.
      */
-    private final Signer signer;
+    private final HttpSigner<AwsCredentialsIdentity> signer;
     /**
      * The source of AWS credentials for signing.
      */
@@ -49,7 +50,7 @@ class RequestSigner {
      * @param region
      */
     RequestSigner(String service,
-                  Signer signer,
+                  HttpSigner<AwsCredentialsIdentity> signer,
                   AwsCredentialsProvider awsCredentialsProvider,
                   Region region) {
         this.service = service;
@@ -65,17 +66,16 @@ class RequestSigner {
      *
      * @param request to be signed
      * @return signed request
-     * @see Signer#sign
+     * @see AwsV4HttpSigner#sign
      */
-    SdkHttpFullRequest signRequest(SdkHttpFullRequest request) {
-        ExecutionAttributes attributes = new ExecutionAttributes();
-        attributes.putAttribute(AwsSignerExecutionAttribute.AWS_CREDENTIALS,
-                                awsCredentialsProvider.resolveCredentials());
-        attributes.putAttribute(AwsSignerExecutionAttribute.SERVICE_SIGNING_NAME, service);
-        attributes.putAttribute(AwsSignerExecutionAttribute.SIGNING_REGION, region);
+    SignedRequest signRequest(SdkHttpFullRequest request) {
+        SignedRequest signedRequest = signer.sign(r -> r.identity(awsCredentialsProvider.resolveCredentials())
+                .request(request)
+                .payload(request.contentStreamProvider().orElse(null))
+                .putProperty(AwsV4HttpSigner.SERVICE_SIGNING_NAME, service)
+                .putProperty(AwsV4HttpSigner.REGION_NAME, region.id()));
 
-        // sign it
-        return signer.sign(request, attributes);
+        return signedRequest;
     }
 
     /**

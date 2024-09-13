@@ -28,14 +28,16 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.core.signer.Signer;
 import software.amazon.awssdk.http.SdkHttpFullRequest;
 import software.amazon.awssdk.http.SdkHttpMethod;
+import software.amazon.awssdk.http.auth.spi.signer.HttpSigner;
+import software.amazon.awssdk.http.auth.spi.signer.SignedRequest;
+import software.amazon.awssdk.identity.spi.AwsCredentialsIdentity;
 import software.amazon.awssdk.regions.Region;
 
 /**
  * An {@link HttpRequestInterceptor} that signs requests for any AWS service
- * running in a specific region using an AWS {@link Signer} and
+ * running in a specific region using an AWS {@link HttpSigner} and
  * {@link AwsCredentialsProvider}.
  */
 public final class AwsRequestSigningApacheInterceptor implements HttpRequestInterceptor {
@@ -52,7 +54,7 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * @param region                 signing region
      */
     public AwsRequestSigningApacheInterceptor(String service,
-                                              Signer signer,
+                                              HttpSigner<AwsCredentialsIdentity> signer,
                                               AwsCredentialsProvider awsCredentialsProvider,
                                               Region region) {
         this.signer = new RequestSigner(service, signer, awsCredentialsProvider, region);
@@ -69,7 +71,7 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
      * @param region                 signing region
      */
     public AwsRequestSigningApacheInterceptor(String service,
-                                              Signer signer,
+                                              HttpSigner<AwsCredentialsIdentity> signer,
                                               AwsCredentialsProvider awsCredentialsProvider,
                                               String region) {
         this(service, signer, awsCredentialsProvider, Region.of(region));
@@ -108,10 +110,10 @@ public final class AwsRequestSigningApacheInterceptor implements HttpRequestInte
         // adds a hash of the request payload when signing
         headers.put("x-amz-content-sha256", Collections.singletonList("required"));
         requestBuilder.headers(headers);
-        SdkHttpFullRequest signedRequest = signer.signRequest(requestBuilder.build());
+        SignedRequest signedRequest = signer.signRequest(requestBuilder.build());
 
         // copy everything back
-        request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+        request.setHeaders(mapToHeaderArray(signedRequest.request().headers()));
     }
 
     private static Map<String, List<String>> headerArrayToMap(Header[] headers) {
