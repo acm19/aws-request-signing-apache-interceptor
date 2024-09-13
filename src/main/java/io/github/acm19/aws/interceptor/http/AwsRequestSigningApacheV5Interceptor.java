@@ -31,14 +31,16 @@ import org.apache.hc.core5.http.io.entity.BufferedHttpEntity;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.core.signer.Signer;
 import software.amazon.awssdk.http.SdkHttpFullRequest;
 import software.amazon.awssdk.http.SdkHttpMethod;
+import software.amazon.awssdk.http.auth.spi.signer.HttpSigner;
+import software.amazon.awssdk.http.auth.spi.signer.SignedRequest;
+import software.amazon.awssdk.identity.spi.AwsCredentialsIdentity;
 import software.amazon.awssdk.regions.Region;
 
 /**
  * An {@link HttpRequestInterceptor} that signs requests for any AWS service
- * running in a specific region using an AWS {@link Signer} and
+ * running in a specific region using an AWS {@link HttpSigner} and
  * {@link AwsCredentialsProvider}.
  */
 public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestInterceptor {
@@ -55,7 +57,7 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
      * @param region                 signing region
      */
     public AwsRequestSigningApacheV5Interceptor(String service,
-                                                Signer signer,
+                                                HttpSigner<AwsCredentialsIdentity> signer,
                                                 AwsCredentialsProvider awsCredentialsProvider,
                                                 Region region) {
         this.signer = new RequestSigner(service, signer, awsCredentialsProvider, region);
@@ -79,8 +81,9 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
                 classicHttpRequest.getEntity().writeTo(outputStream);
                 if (!classicHttpRequest.getEntity().isRepeatable()) {
                     // copy back the entity, so it can be read again
-                    BasicHttpEntity entity = new BasicHttpEntity(new ByteArrayInputStream(outputStream.toByteArray()),
-                                                                 ContentType.parse(entityDetails.getContentType()));
+                    BasicHttpEntity entity = new BasicHttpEntity(
+                            new ByteArrayInputStream(outputStream.toByteArray()),
+                            ContentType.parse(entityDetails.getContentType()));
                     // wrap into repeatable entity to support retries
                     classicHttpRequest.setEntity(new BufferedHttpEntity(entity));
                 }
@@ -92,10 +95,10 @@ public final class AwsRequestSigningApacheV5Interceptor implements HttpRequestIn
         // adds a hash of the request payload when signing
         headers.put("x-amz-content-sha256", Collections.singletonList("required"));
         requestBuilder.headers(headers);
-        SdkHttpFullRequest signedRequest = signer.signRequest(requestBuilder.build());
+        SignedRequest signedRequest = signer.signRequest(requestBuilder.build());
 
         // copy everything back
-        request.setHeaders(mapToHeaderArray(signedRequest.headers()));
+        request.setHeaders(mapToHeaderArray(signedRequest.request().headers()));
     }
 
     private static URI buildUri(HttpRequest request) throws IOException {

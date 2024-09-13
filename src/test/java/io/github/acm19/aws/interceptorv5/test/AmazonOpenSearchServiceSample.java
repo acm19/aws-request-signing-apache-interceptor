@@ -37,7 +37,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * <pre>
  * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
- *         Aws4Signer.create(),
+ *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
  *         "us-east-1");
  *
@@ -52,7 +52,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * <pre>
  * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
- *         Aws4Signer.create(),
+ *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
  *         "us-east-1");
  *

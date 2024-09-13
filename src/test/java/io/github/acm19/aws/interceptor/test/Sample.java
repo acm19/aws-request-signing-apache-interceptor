@@ -28,7 +28,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheInterceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
@@ -121,7 +121,7 @@ class Sample {
     CloseableHttpClient signingClient() {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
                 service,
-                Aws4Signer.create(),
+                AwsV4HttpSigner.create(),
                 DefaultCredentialsProvider.create(),
                 region);
 

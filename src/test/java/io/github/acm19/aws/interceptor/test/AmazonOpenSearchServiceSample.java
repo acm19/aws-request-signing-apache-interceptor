@@ -33,11 +33,10 @@ import org.apache.http.entity.StringEntity;
  * Example usage with the OpenSearch low-level REST client:
  *
  * <pre>
- * Aws4Signer signer = Aws4Signer.create();
  *
  * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
  *         "es",
- *         Aws4Signer.create(),
+ *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
  *         "us-east-1");
  *
@@ -52,7 +51,7 @@ import org.apache.http.entity.StringEntity;
  * <pre>
  * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
  *         "es",
- *         Aws4Signer.create(),
+ *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
  *         "us-east-1");
  *

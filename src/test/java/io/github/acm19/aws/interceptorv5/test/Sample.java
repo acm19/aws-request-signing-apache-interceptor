@@ -42,7 +42,7 @@ import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.hc.core5.http2.HttpVersionPolicy;
 import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheV5Interceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
 import software.amazon.awssdk.regions.Region;
 
 class Sample {
@@ -139,7 +139,7 @@ class Sample {
     private CloseableHttpClient signingClient() {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
                 service,
-                Aws4Signer.create(),
+                AwsV4HttpSigner.create(),
                 DefaultCredentialsProvider.create(),
                 region);
 
@@ -183,7 +183,7 @@ class Sample {
     private CloseableHttpAsyncClient signingAsyncClient() {
         HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
                 service,
-                Aws4Signer.create(),
+                AwsV4HttpSigner.create(),
                 DefaultCredentialsProvider.create(),
                 region);
 
