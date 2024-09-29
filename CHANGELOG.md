@@ -1,4 +1,4 @@
-### 3.0.0 (Next)
+### 3.0.0 (2024/09/29)
 * [#125](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/125): Use to use `AwsV4HttpSigner` - [@GeorgeVincentDepop](https://github.com/GeorgeVincentDepop)
 
 ### 2.3.1 (2023/06/11)
