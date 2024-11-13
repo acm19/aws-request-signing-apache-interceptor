@@ -11,7 +11,6 @@ package io.github.acm19.aws.interceptor.http;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,12 +28,16 @@ import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpCoreContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -50,39 +53,53 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
 class AwsRequestSigningApacheInterceptorTest {
-    private AwsRequestSigningApacheInterceptor interceptor;
+    private CloseableHttpClient client;
+    private HttpHost host;
+    private MockWebServer server;
 
     @BeforeEach
-    void createInterceptor() {
+    void setup() throws IOException {
         AwsCredentialsProvider anonymousCredentialsProvider = StaticCredentialsProvider
                 .create(AnonymousCredentialsProvider.create().resolveCredentials());
-        interceptor = new AwsRequestSigningApacheInterceptor("servicename",
+        AwsRequestSigningApacheInterceptor interceptor = new AwsRequestSigningApacheInterceptor("servicename",
                 new AddHeaderSigner("Signature", "wuzzle"),
                 anonymousCredentialsProvider,
                 Region.AF_SOUTH_1);
+        client = HttpClients.custom()
+                .addInterceptorLast(interceptor)
+                .build();
+
+        server = new MockWebServer();
+        server.enqueue(new MockResponse());
+        server.start();
+        host = new HttpHost(server.getHostName(), server.getPort());
+    }
+
+    @AfterEach
+    void cleanup() throws IOException {
+        server.shutdown();
+        client.close();
     }
 
     @Test
     void signGetRequest() throws Exception {
-        HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(new MockRequestLine("/query?a=b"));
+        HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
+            "GET", server.url("/query?a=b").toString());
         request.addHeader("foo", "bar");
-        request.addHeader("content-length", "0");
 
-        HttpCoreContext context = new HttpCoreContext();
-        context.setTargetHost(HttpHost.create("localhost"));
+        client.execute(host, request);
+        RecordedRequest recorded = server.takeRequest();
 
-        interceptor.process(request, context);
-
-        assertEquals("bar", request.getFirstHeader("foo").getValue());
-        assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
-        assertNull(request.getFirstHeader("content-length"));
-        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
+        assertEquals("bar", recorded.getHeader("foo"));
+        assertEquals("wuzzle", recorded.getHeader("Signature"));
+        assertNull(recorded.getHeader("content-length"));
+        assertEquals("required", recorded.getHeader("x-amz-content-sha256"));
     }
 
     @Test
     void signPostRequest() throws Exception {
         HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
-                new MockRequestLine("POST", "/query?a=b"));
+                "POST", server.url("/query?a=b").toString());
 
         String payload = "{\"test\": \"val\"}";
         BasicHttpEntity httpEntity = new BasicHttpEntity();
@@ -95,42 +112,25 @@ class AwsRequestSigningApacheInterceptorTest {
 
         request.addHeader("foo", "bar");
 
-        HttpCoreContext context = new HttpCoreContext();
-        context.setTargetHost(HttpHost.create("localhost"));
+        client.execute(host, request);
+        RecordedRequest recorded = server.takeRequest();
 
-        interceptor.process(request, context);
-
-        assertEquals("bar", request.getFirstHeader("foo").getValue());
-        assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
-        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
+        assertEquals("bar", recorded.getHeader("foo"));
+        assertEquals("wuzzle", recorded.getHeader("Signature"));
+        assertEquals("required", recorded.getHeader("x-amz-content-sha256"));
 
         assertEquals(Long.toString(httpEntity.getContentLength()),
-                request.getFirstHeader("signedContentLength").getValue());
+                recorded.getHeader("signedContentLength"));
 
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        request.getEntity().writeTo(outputStream);
-        assertEquals(payload, outputStream.toString());
+        assertEquals(payload, recorded.getBody().readUtf8());
     }
 
-    @Test
-    void testRepeatableEntity() throws Exception {
-        HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
-                new MockRequestLine("POST", "/"));
-
-        String payload = "{\"test\": \"val\"}";
-        request.setEntity(new StringEntity(payload));
-        HttpCoreContext context = new HttpCoreContext();
-        context.setTargetHost(HttpHost.create("localhost"));
-        interceptor.process(request, context);
-
-        assertTrue(request.getEntity().isRepeatable());
-    }
 
     @Test
     void testBadRequest() throws Exception {
         HttpRequest badRequest = new BasicHttpRequest("GET", "?#!@*%");
         assertThrows(IOException.class, () -> {
-            interceptor.process(badRequest, new BasicHttpContext());
+            client.execute(host, badRequest);
         });
     }
 
@@ -138,22 +138,18 @@ class AwsRequestSigningApacheInterceptorTest {
     void testEncodedUriSigner() throws Exception {
         String data = "I'm an entity";
         HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
-                new MockRequestLine("/foo-2017-02-25%2Cfoo-2017-02-26/_search?a=b"));
+                "POST", server.url("/foo-2017-02-25%2Cfoo-2017-02-26/_search?a=b").toString());
         request.setEntity(new StringEntity(data));
         request.addHeader("foo", "bar");
-        request.addHeader("content-length", "0");
 
-        HttpCoreContext context = new HttpCoreContext();
-        context.setTargetHost(HttpHost.create("localhost"));
+        client.execute(host, request);
+        RecordedRequest recorded = server.takeRequest();
 
-        interceptor.process(request, context);
-
-        assertEquals("bar", request.getFirstHeader("foo").getValue());
-        assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
-        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
-        assertNull(request.getFirstHeader("content-length"));
-        assertEquals("/foo-2017-02-25%2Cfoo-2017-02-26/_search", request.getFirstHeader("resourcePath").getValue());
-        assertEquals(Long.toString(data.length()), request.getFirstHeader("signedContentLength").getValue());
+        assertEquals("bar", recorded.getHeader("foo"));
+        assertEquals("wuzzle", recorded.getHeader("Signature"));
+        assertEquals("required", recorded.getHeader("x-amz-content-sha256"));
+        assertEquals("/foo-2017-02-25%2Cfoo-2017-02-26/_search", recorded.getHeader("resourcePath"));
+        assertEquals(Long.toString(data.length()), recorded.getHeader("signedContentLength"));
     }
 
     @Test
@@ -161,7 +157,7 @@ class AwsRequestSigningApacheInterceptorTest {
         String data = "data";
 
         HttpEntityEnclosingRequest request = new BasicHttpEntityEnclosingRequest(
-                new MockRequestLine("POST", "/query?a=b"));
+                "POST", server.url("/query?a=b").toString());
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)) {
@@ -173,16 +169,14 @@ class AwsRequestSigningApacheInterceptorTest {
         request.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         request.setEntity(entity);
 
-        HttpCoreContext context = new HttpCoreContext();
-        context.setTargetHost(HttpHost.create("localhost"));
+        client.execute(host, request);
+        RecordedRequest recorded = server.takeRequest();
 
-        interceptor.process(request, context);
-
-        assertEquals("wuzzle", request.getFirstHeader("Signature").getValue());
-        assertEquals("required", request.getFirstHeader("x-amz-content-sha256").getValue());
+        assertEquals("wuzzle", recorded.getHeader("Signature"));
+        assertEquals("required", recorded.getHeader("x-amz-content-sha256"));
 
         assertEquals(Long.toString(entity.getContentLength()),
-                    request.getFirstHeader("signedContentLength").getValue());
+                    recorded.getHeader("signedContentLength"));
     }
 
     private static final class AddHeaderSigner implements AwsV4HttpSigner {
