@@ -22,8 +22,6 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.RequestLine;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -236,35 +234,6 @@ class AwsRequestSigningApacheInterceptorTest {
         @Override
         public CompletableFuture<AsyncSignedRequest> signAsync(AsyncSignRequest asyncSignRequest) {
             return null;
-        }
-    }
-
-    private static class MockRequestLine implements RequestLine {
-        private final String uri;
-        private final String method;
-
-        MockRequestLine(final String uri) {
-            this("POST", uri);
-        }
-
-        MockRequestLine(final String method, final String uri) {
-            this.method = method;
-            this.uri = uri;
-        }
-
-        @Override
-        public String getMethod() {
-            return method;
-        }
-
-        @Override
-        public String getUri() {
-            return uri;
-        }
-
-        @Override
-        public ProtocolVersion getProtocolVersion() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }
