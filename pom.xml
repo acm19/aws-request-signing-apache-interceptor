@@ -103,6 +103,13 @@
       <version>1.9.0</version>
       <scope>test</scope>
     </dependency>
+    <!-- Capture real requests in test suite to verify signatures -->
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>4.12.0</version>
+      <scope>test</scope>
+    </dependency>
     <!-- Provide wire logs for Apache Client v5 Sample -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
