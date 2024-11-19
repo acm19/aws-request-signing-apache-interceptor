@@ -22,6 +22,7 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.impl.BasicEntityDetails;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -49,14 +50,21 @@ class AwsRequestSigningApacheV5InterceptorTest {
     static Stream<Arguments> allClients() {
         AwsCredentialsProvider anonymousCredentialsProvider = StaticCredentialsProvider
                 .create(AnonymousCredentialsProvider.create().resolveCredentials());
-        AwsRequestSigningApacheV5Interceptor interceptor = new AwsRequestSigningApacheV5Interceptor("servicename",
+        AwsRequestSigningApacheV5Interceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
+                "servicename",
+                new AddHeaderSigner("Signature", "wuzzle"),
+                anonymousCredentialsProvider,
+                Region.AF_SOUTH_1);
+        AwsRequestSigningApacheV5ExecInterceptor execInterceptor = new AwsRequestSigningApacheV5ExecInterceptor(
+                "servicename",
                 new AddHeaderSigner("Signature", "wuzzle"),
                 anonymousCredentialsProvider,
                 Region.AF_SOUTH_1);
 
         return Stream.of(
                 Arguments.of(Named.of("SyncRequestInterceptor", new ApacheV5SyncRequestInterceptorAdapter(interceptor))),
-                Arguments.of(Named.of("AsyncRequestInterceptor", new ApacheV5AsyncRequestInterceptorAdapter(interceptor)))
+                Arguments.of(Named.of("AsyncRequestInterceptor", new ApacheV5AsyncRequestInterceptorAdapter(interceptor))),
+                Arguments.of(Named.of("AsyncExecInterceptor", new ApacheV5AsyncExecInterceptorAdapter(execInterceptor)))
         );
     }
 
