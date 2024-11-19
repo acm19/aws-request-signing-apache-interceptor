@@ -21,7 +21,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.impl.BasicEntityDetails;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -37,7 +36,6 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 
 class AwsRequestSigningApacheV5InterceptorTest {
-    private static final BasicEntityDetails ENTITY_DETAILS = new BasicEntityDetails(0, ContentType.TEXT_XML);
     private MockWebServer server;
     private CloseableHttpClient client;
 
@@ -69,7 +67,7 @@ class AwsRequestSigningApacheV5InterceptorTest {
         HttpGet request = new HttpGet(server.url("/query?a=b").toString());
         request.addHeader("foo", "bar");
 
-        client.execute(request);
+        client.execute(request, response -> "ignored");
         RecordedRequest recorded = server.takeRequest();
 
         assertEquals("bar", recorded.getHeader("foo"));
@@ -89,7 +87,7 @@ class AwsRequestSigningApacheV5InterceptorTest {
                 payloadData.length, ContentType.TEXT_XML);
         request.setEntity(httpEntity);
 
-        client.execute(request);
+        client.execute(request, response -> "ignored");
         RecordedRequest recorded = server.takeRequest();
 
         assertEquals("bar", recorded.getHeader("foo"));
@@ -108,7 +106,7 @@ class AwsRequestSigningApacheV5InterceptorTest {
         request.setEntity(new StringEntity(data));
         request.addHeader("foo", "bar");
 
-        client.execute(request);
+        client.execute(request, response -> "ignored");
         RecordedRequest recorded = server.takeRequest();
 
         assertEquals("bar", recorded.getHeader("foo"));
@@ -131,7 +129,7 @@ class AwsRequestSigningApacheV5InterceptorTest {
         request.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
         request.setEntity(entity);
 
-        client.execute(request);
+        client.execute(request, response -> "ignored");
         RecordedRequest recorded = server.takeRequest();
 
         assertEquals("wuzzle", recorded.getHeader("Signature"));
