@@ -16,6 +16,8 @@ import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 
+import software.amazon.awssdk.utils.IoUtils;
+
 class ApacheV5AsyncExecInterceptorAdapter implements ApacheV5ClientAdapter {
     private final CloseableHttpAsyncClient client;
 
@@ -29,7 +31,7 @@ class ApacheV5AsyncExecInterceptorAdapter implements ApacheV5ClientAdapter {
         SimpleRequestBuilder requestBuilder = SimpleRequestBuilder.copy(request);
         HttpEntity entity = request.getEntity();
         if (entity != null) {
-            requestBuilder.setBody(entity.getContent().readAllBytes(), ContentType.parse(entity.getContentType()));
+            requestBuilder.setBody(IoUtils.toByteArray(entity.getContent()), ContentType.parse(entity.getContentType()));
         }
         client.execute(requestBuilder.build(), null).get();
     }
