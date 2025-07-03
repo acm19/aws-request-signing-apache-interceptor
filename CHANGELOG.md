@@ -1,5 +1,6 @@
 ### 3.0.1 (Next)
-* [#130](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/130):  Remove usage of deprecated methods - [@acm19](https://github.com/acm19).
+* [#140](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/140): Replaces deprecated OSSRH deployment - [@acm19](https://github.com/acm19).
+* [#130](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/130): Remove usage of deprecated methods - [@acm19](https://github.com/acm19).
 * [#129](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/129): Dispatch/verify requests against mockwebserver - [@bobziuchkovski](https://github.com/bobziuchkovski).
 
 ### 3.0.0 (2024/09/29)
