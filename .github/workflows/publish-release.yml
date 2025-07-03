@@ -32,10 +32,8 @@ jobs:
     - name: Build with Maven
       run: mvn -B package
     - name: Publish to Maven central
-      run: mvn -B deploy -P release -DskipTests=true
+      run: mvn -B deploy -P release -DskipTests=true -s .github/settings.xml -Dserver.username=${{ secrets.CENTRAL_TOKEN_USERNAME }} -Dserver.password=${{ secrets.CENTRAL_TOKEN_PASSWORD }} -X
       env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
     - name: Create Release Tag
