@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.hc.client5.http.async.methods.SimpleRequestBuilder;
@@ -35,7 +35,6 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.concurrent.FutureCallback;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpRequestInterceptor;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
@@ -47,7 +46,6 @@ import software.amazon.awssdk.regions.Region;
 
 class Sample {
     private static final int WAIT_FOR_RESPONSE = 5;
-    private static final int SCREEN_WIDTH = 160;
 
     protected String endpoint;
     protected Region region;
@@ -67,6 +65,7 @@ class Sample {
         Sample sampleClass = new Sample(args);
         sampleClass.makeGetRequest();
         sampleClass.makePostRequest();
+        sampleClass.makeAsyncRequest();
     }
 
     private void parseOptions(String[] args) throws ParseException {
@@ -82,19 +81,23 @@ class Sample {
             this.service = cmd.getOptionValue("service", "es");
         } catch (ParseException e) {
             System.err.println(e.getMessage());
-            new HelpFormatter().printHelp(
-                    SCREEN_WIDTH,
-                    String.join(" ",
+            try {
+                HelpFormatter.builder().get().printHelp(
+                        String.join(" ",
                             "mvn",
                             "test-compile",
                             "exec:java",
                             "-Dexec.classpathScope=test",
                             "-Dexec.mainClass=\"" + getClass().getCanonicalName() + "\"",
                             "-Dexec.args=\"...\""
-                    ),
-                    null,
-                    options,
-                    null);
+                        ),
+                        null,
+                        options,
+                        null,
+                        false);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             throw e;
         }
     }
@@ -113,7 +116,7 @@ class Sample {
         logRequest(httpPost);
     }
 
-    private void makeAsynRequest() throws IOException {
+    private void makeAsyncRequest() throws IOException {
         String payload = "{\"aync\": \"request\"}";
         SimpleHttpRequest request = SimpleRequestBuilder.post(endpoint + "/login")
                 .setBody(payload, ContentType.APPLICATION_JSON)
@@ -137,14 +140,14 @@ class Sample {
     }
 
     private CloseableHttpClient signingClient() {
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
+        AwsRequestSigningApacheV5Interceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
                 service,
                 AwsV4HttpSigner.create(),
-                DefaultCredentialsProvider.create(),
+                DefaultCredentialsProvider.builder().build(),
                 region);
 
         return HttpClients.custom()
-                .addRequestInterceptorLast(interceptor)
+                .addExecInterceptorLast("aws-signing-interceptor", interceptor)
                 .build();
     }
 
@@ -181,14 +184,14 @@ class Sample {
     }
 
     private CloseableHttpAsyncClient signingAsyncClient() {
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
+        AwsRequestSigningApacheV5Interceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
                 service,
                 AwsV4HttpSigner.create(),
-                DefaultCredentialsProvider.create(),
+                DefaultCredentialsProvider.builder().build(),
                 region);
 
         return HttpAsyncClients.custom()
-                .addRequestInterceptorLast(interceptor)
+                .addExecInterceptorLast("aws-signing-interceptor", interceptor)
                 .setConnectionManager(PoolingAsyncClientConnectionManagerBuilder.create()
                         .setDefaultTlsConfig(TlsConfig.custom()
                                 .setVersionPolicy(HttpVersionPolicy.FORCE_HTTP_1)

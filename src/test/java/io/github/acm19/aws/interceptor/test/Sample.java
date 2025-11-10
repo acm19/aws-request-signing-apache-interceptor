@@ -13,10 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.http.HttpRequestInterceptor;
+import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -68,19 +67,23 @@ class Sample {
             this.service = cmd.getOptionValue("service", "es");
         } catch (ParseException e) {
             System.err.println(e.getMessage());
-            new HelpFormatter().printHelp(
-                    SCREEN_WIDTH,
-                    String.join(" ",
-                            "mvn",
-                            "test-compile",
-                            "exec:java",
-                            "-Dexec.classpathScope=test",
-                            "-Dexec.mainClass=\"" + getClass().getCanonicalName() + "\"",
-                            "-Dexec.args=\"...\""
-                    ),
-                    null,
-                    options,
-                    null);
+            try {
+                HelpFormatter.builder().get().printHelp(
+                        String.join(" ",
+                                "mvn",
+                                "test-compile",
+                                "exec:java",
+                                "-Dexec.classpathScope=test",
+                                "-Dexec.mainClass=\"" + getClass().getCanonicalName() + "\"",
+                                "-Dexec.args=\"...\""
+                        ),
+                        null,
+                        options,
+                        null,
+                    false);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             throw e;
         }
     }
@@ -119,10 +122,10 @@ class Sample {
     }
 
     CloseableHttpClient signingClient() {
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+        AwsRequestSigningApacheInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
                 service,
                 AwsV4HttpSigner.create(),
-                DefaultCredentialsProvider.create(),
+                DefaultCredentialsProvider.builder().build(),
                 region);
 
         return HttpClients.custom()
