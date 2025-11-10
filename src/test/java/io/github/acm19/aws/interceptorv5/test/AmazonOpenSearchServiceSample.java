@@ -35,7 +35,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * Example usage with the OpenSearch low-level REST client:
  *
  * <pre>
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
+ * AwsRequestSigningApacheInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
  *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
@@ -43,14 +43,14 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  *
  * return RestClient
  *         .builder(HttpHost.create("https://search-my-es-endpoint-gjhfgfhgfhg.us-east-1.amazonaws.com"))
- *         .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor))
+ *         .setHttpClientConfigCallback(hacb -> hacb.addExecInterceptorLast("aws-signing-interceptor", interceptor))
  *         .build();
  * </pre>
  *
  * Example usage with the OpenSearch high-level REST client:
  *
  * <pre>
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
+ * AwsRequestSigningApacheInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
  *         "es",
  *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
@@ -59,7 +59,8 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
  * return new RestHighLevelClient(
  *         RestClient
  *                 .builder(HttpHost.create("https://search-my-es-endpoint-gjhfgfhgfhg.us-east-1.amazonaws.com"))
- *                 .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
+ *                 .setHttpClientConfigCallback(hacb ->
+ *                     hacb.addExecInterceptorLast("aws-signing-interceptor", interceptor)));
  * </pre>
  */
 public final class AmazonOpenSearchServiceSample extends Sample {
@@ -80,8 +81,7 @@ public final class AmazonOpenSearchServiceSample extends Sample {
         try {
             sample.indexDocument();
             sample.indexDocumentWithCompressionEnabled();
-            // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/101
-            // sample.indexDocumentAsynchronously();
+            sample.indexDocumentAsynchronously();
             // https://github.com/acm19/aws-request-signing-apache-interceptor/issues/20
             // sample.indexDocumentWithChunkedTransferEncoding();
             // sample.indexDocumentWithChunkedTransferEncodingCompressionEnabled();

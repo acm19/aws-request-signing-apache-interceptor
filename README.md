@@ -17,7 +17,7 @@ Add [io.github.acm19.aws-request-signing-apache-interceptor](https://repo1.maven
 <dependency>
   <groupId>io.github.acm19</groupId>
   <artifactId>aws-request-signing-apache-interceptor</artifactId>
-  <version>3.0.0</version>
+  <version>4.0.0</version>
 </dependency>
 ```
 
@@ -39,11 +39,11 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
 final class Example {
-    public static void main(String[] args) throws ClientProtocolException, IOException {
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+    public static void main(String[] args) throws IOException {
+        AwsRequestSigningApacheInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
                 "service",
                 AwsV4HttpSigner.create(),
-                DefaultCredentialsProvider.create(),
+                DefaultCredentialsProvider.builder().build(),
                 Region.US_WEST_2
         );
 
@@ -66,31 +66,29 @@ To sign requests made with version 5 of the client the following interceptor sho
 
 ```java
 import java.io.IOException;
-import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheV5Interceptor;
-import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.HttpRequestInterceptor;
+import io.github.acm19.aws.interceptor.http.AwsRequestSigningApacheV5Interceptor;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.utils.IoUtils;
 
 final class Example {
-    public static void main(String[] args) throws ClientProtocolException, IOException {
-        HttpRequestInterceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
+    public static void main(String[] args) throws IOException {
+        AwsRequestSigningApacheV5Interceptor interceptor = new AwsRequestSigningApacheV5Interceptor(
                 "service",
                 AwsV4HttpSigner.create(),
-                DefaultCredentialsProvider.create(),
+                DefaultCredentialsProvider.builder().build(),
                 Region.US_WEST_2
         );
 
         try (CloseableHttpClient client = HttpClients.custom()
-                .addRequestInterceptorLast(interceptor)
+                .addExecInterceptorLast("aws-signing-interceptor", interceptor)
                 .build()) {
             HttpGet httpGet = new HttpGet("https://...");
-            httpClient.execute(request, response -> {
+            client.execute(httpGet, response -> {
                 System.out.println(response.getCode());
                 System.out.println(IoUtils.toUtf8String(response.getEntity().getContent()));
             });

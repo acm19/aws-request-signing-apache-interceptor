@@ -34,7 +34,7 @@ import org.apache.http.entity.StringEntity;
  *
  * <pre>
  *
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ * AwsRequestSigningApacheInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
  *         "es",
  *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
@@ -49,7 +49,7 @@ import org.apache.http.entity.StringEntity;
  * Example usage with the OpenSearch high-level REST client:
  *
  * <pre>
- * HttpRequestInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
+ * AwsRequestSigningApacheInterceptor interceptor = new AwsRequestSigningApacheInterceptor(
  *         "es",
  *         AwsV4HttpSigner.create(),
  *         DefaultCredentialsProvider.create(),
