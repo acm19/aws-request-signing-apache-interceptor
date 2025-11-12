@@ -11,6 +11,7 @@ package io.github.acm19.aws.interceptor.test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
+
 import org.apache.commons.cli.ParseException;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.entity.GzipCompressingEntity;
