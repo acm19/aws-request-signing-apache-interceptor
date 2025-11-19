@@ -1,6 +1,6 @@
-- [Upgrading AWS Request Signing Interceptor](#upgrading-opensearch-python-client)
-    - [## Upgrading to >= 4.0.0](#upgrading-to->=-4.0.0)
-    - [## Upgrading to >= 3.0.0](#upgrading-to->=-3.0.0)
+- [Upgrading AWS Request Signing Interceptor](#upgrading-aws-request-signing-interceptor)
+    - [## Upgrading to >= 4.0.0](#upgrading-to--400)
+    - [## Upgrading to >= 3.0.0](#upgrading-to--300)
 
 
 # Upgrading AWS Request Signing Interceptor
