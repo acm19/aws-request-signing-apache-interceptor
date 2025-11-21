@@ -7,10 +7,6 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["com.puppycrawl.tools:checkstyle"],
-      "allowedVersions": "<=9.3"
-    },
-    {
       "matchPackageNames": ["org.junit:*"],
       "allowedVersions": "<6.0.0",
       "description": "Limit JUnit major version to 5 since JUnit 6 requires Java 17"

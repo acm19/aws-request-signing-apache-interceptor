@@ -8,6 +8,16 @@ verify:
 	mvn verify
 
 
+.PHONY: format
+.SILENT: format
+format:
+	mvn spotless:apply
+
+.PHONY: format-check
+.SILENT: format-check
+format-check:
+	mvn spotless:check
+
 .PHONY: checkstyle
 .SILENT: checkstyle
 checkstyle:
