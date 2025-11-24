@@ -82,8 +82,8 @@ public final class AwsRequestSigningApacheV5Interceptor implements ExecChainHand
                         AsyncExecChain.Scope scope,
                         AsyncExecChain execChain,
                         AsyncExecCallback asyncExecCallback) throws HttpException, IOException {
-                        signRequest(request, getContentStreamSupplier(scope.originalRequest));
-                        execChain.proceed(request, entityProducer, scope, asyncExecCallback);
+        signRequest(request, getContentStreamSupplier(scope.originalRequest));
+        execChain.proceed(request, entityProducer, scope, asyncExecCallback);
     }
 
     @Override
