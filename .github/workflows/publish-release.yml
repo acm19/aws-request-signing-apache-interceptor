@@ -38,12 +38,9 @@ jobs:
 
     - name: Create Release Tag
       if: ${{ !endsWith(steps.project.outputs.version, '-SNAPSHOT') }}
-      id: create_release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.project.outputs.version }}
-        release_name: ${{ steps.project.outputs.version }}
-        draft: false
-        prerelease: false
+      run: |
+        gh release create ${{ steps.project.outputs.version }} \
+          --title "${{ steps.project.outputs.version }}" \
+          --notes "Release ${{ steps.project.outputs.version }}"
