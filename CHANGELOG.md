@@ -1,4 +1,5 @@
 ### 4.0.1 (Next)
+* [#149](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/149): Add Checkstyle indentation checks - [@dblock](https://github.com/dblock).
 
 ### 4.0.0 (2025/11/20)
 * [#146](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/146): Add support for async Apache client v5 - [@lennehendrickx](https://github.com/lennehendrickx).

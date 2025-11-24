@@ -164,6 +164,9 @@
     </module>
     <module name="UpperEll"/>
 
+    <!-- See https://checkstyle.sourceforge.io/checks/misc/indentation.html -->
+    <module name="Indentation"/>
+
     <!-- https://checkstyle.org/config_filters.html#SuppressionXpathFilter -->
     <module name="SuppressionXpathFilter">
       <property name="file" value="${org.checkstyle.sun.suppressionxpathfilter.config}"
