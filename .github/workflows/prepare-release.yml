@@ -13,7 +13,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PUSH_TOKEN }}
       - name: Set up JDK 8
