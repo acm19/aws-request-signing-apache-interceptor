@@ -66,7 +66,7 @@
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>auth</artifactId>
-      <version>2.37.2</version>
+      <version>2.39.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -94,14 +94,14 @@
     <dependency>
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
-      <version>1.10.0</version>
+      <version>1.11.0</version>
       <scope>test</scope>
     </dependency>
     <!-- Capture real requests in test suite to verify signatures -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>mockwebserver</artifactId>
-      <version>5.3.0</version>
+      <version>5.3.2</version>
       <scope>test</scope>
     </dependency>
     <!-- Provide wire logs for Apache Client v5 Sample -->
@@ -135,13 +135,13 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.19.1</version>
+        <version>2.20.1</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
+        <version>3.5.0</version>
         <configuration>
           <archive>
             <manifestEntries>
@@ -216,7 +216,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>3.4.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
