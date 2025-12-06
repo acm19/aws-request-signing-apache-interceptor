@@ -1,0 +1,92 @@
+name: Validate Changelog
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check if CHANGELOG.md was updated
+        run: |
+          # Get the list of changed files in this PR
+          git fetch origin ${{ github.base_ref }}
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          echo "Files changed in this PR:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          # Check if CHANGELOG.md is in the list of changed files
+          if ! echo "$CHANGED_FILES" | grep -q "^CHANGELOG.md$"; then
+            echo "✗ CHANGELOG.md has not been updated"
+            echo ""
+            echo "Please update CHANGELOG.md with your changes following the format:"
+            echo "* [#PR_NUMBER](PR_URL): Description - [@username](https://github.com/username)."
+            echo ""
+            echo "Add your entry under the topmost version section (e.g., under '### X.X.X (Next)')."
+            exit 1
+          fi
+
+          echo "✓ CHANGELOG.md has been updated"
+          echo ""
+
+      - name: Validate changelog entry format
+        run: |
+          # Get the diff for CHANGELOG.md
+          git fetch origin ${{ github.base_ref }}
+          CHANGELOG_DIFF=$(git diff origin/${{ github.base_ref }}...HEAD -- CHANGELOG.md)
+
+          # Extract added lines (lines starting with + [changes], but not +++ [metadata])
+          ADDED_LINES=$(echo "$CHANGELOG_DIFF" | grep "^+" | grep -v "^+++" || true)
+
+          echo "Added lines in CHANGELOG.md:"
+          echo "$ADDED_LINES"
+          echo ""
+
+          # Count valid changelog entries
+          VALID_ENTRIES=$(echo "$ADDED_LINES" | grep -E '^\+\* \[#[0-9]+\]\(https://github\.com/[^/]+/[^/]+/pull/[0-9]+\): .+ - \[@[^]]+\]\(https://github\.com/[^)]+\)\.' || true)
+          VALID_COUNT=$([[ -n "$VALID_ENTRIES" ]] && echo "$VALID_ENTRIES" | grep -c "^\+" || echo 0)
+
+          # Check that exactly one valid entry was added
+          if [ "$VALID_COUNT" -eq 0 ]; then
+            echo "✗ No valid changelog entry found"
+            echo ""
+            echo "Expected format:"
+            echo "* [#PR_NUMBER](https://github.com/OWNER/REPO/pull/PR_NUMBER): Description - [@username](https://github.com/username)."
+            echo ""
+            echo "Example:"
+            echo "* [#123](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/123): Add changelog validation - [@username](https://github.com/username)."
+            exit 1
+          elif [ "$VALID_COUNT" -gt 1 ]; then
+            echo "✗ Multiple changelog entries detected ($VALID_COUNT entries)"
+            echo ""
+            echo "Please add only ONE changelog entry per pull request."
+            echo ""
+            echo "Entries found:"
+            echo "$VALID_ENTRIES" | sed 's/^+//'
+            exit 1
+          fi
+
+          # Count total added lines (including any blank lines or invalid entries)
+          TOTAL_ADDED=$([[ -n "$ADDED_LINES" ]] && echo "$ADDED_LINES" | wc -l || echo 0)
+
+          # Check that only one line was added (no blank lines or other content)
+          if [ "$TOTAL_ADDED" -ne 1 ]; then
+            echo "✗ Detected $TOTAL_ADDED added lines, but only 1 line should be added"
+            echo ""
+            echo "Please add only ONE changelog entry with no blank lines or additional content."
+            echo ""
+            echo "All added lines:"
+            echo "$ADDED_LINES"
+            exit 1
+          fi
+
+          echo "✓ Exactly one valid changelog entry found:"
+          echo "$VALID_ENTRIES" | sed 's/^+//'

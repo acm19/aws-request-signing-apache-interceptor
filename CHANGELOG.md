@@ -1,4 +1,5 @@
 ### 4.0.1 (Next)
+* [#153](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/153): Validate CHANGELOG generation - [@acm19](https://github.com/acm19).
 * [#151](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/151): Upgrade deprecated actions/create-release@v1 - [@dblock](https://github.com/dblock).
 * [#150](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/150): Fix pom.xml indentation inconsistencies - [@dblock](https://github.com/dblock).
 * [#149](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/149): Add Checkstyle indentation checks - [@dblock](https://github.com/dblock).
@@ -19,12 +20,10 @@
 * [#104](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/104): Make request interceptors simpler and other improvements - [@acm19](https://github.com/acm19).
 
 ### 2.3.0 (2023/01/26)
-
 * [#94](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/94): Add support for OpenSearch Serverless - [@dblock](https://github.com/dblock).
 * [#92](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/92): Make samples compatible with OpenSearch 2.x - [@dblock](https://github.com/dblock).
 
 ### 2.2.0 (2022/10/02)
-
 * [#80](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/80): Add support for Apache client v5 - [@acm19](https://github.com/acm19).
 * [#76](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/76): Automate release process - [@acm19](https://github.com/acm19).
 * [#75](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/75): Add OpenSearch cluster infrastructure - [@acm19](https://github.com/acm19).
@@ -33,11 +32,9 @@
 * [#70](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/70): Add maven release info, usage and badge to README - [@dblock](https://github.com/dblock).
 
 ### 2.1.1 (2022/07/12)
-
 * [#67](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/67): Add fields required by Maven Central to de POM - [@acm19](https://github.com/acm19).
 
 ### 2.1.0 (2022/07/12)
-
 * [#58](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/58): Test and fix the release process - [@acm19](https://github.com/acm19).
 * [#59](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/59): Document versioning standard - [@acm19](https://github.com/acm19).
 * [#44](https://github.com/acm19/aws-request-signing-apache-interceptor/issues/44): Release to Maven Central - [@dblock](https://github.com/dblock), [@acm19](https://github.com/acm19).
@@ -60,14 +57,11 @@
 * Re-add support for JDK8 - [@acm19](https://github.com/acm19).
 
 ### 2.0.2 (2020/12/27)
-
 * Updated dependencies - [@renovate-bot](https://github.com/renovate-bot).
 
 ### 2.0.1 (2020/05/03)
-
 * Make `httpClient` a `provided` dependency - [@acm19](https://github.com/acm19).
 
 ### 2.0.0 (2020/05/03)
-
 * Added renovate - [@acm19](https://github.com/acm19).
 * Upgraded to AWS SDK 2.13.8 - [@acm19](https://github.com/acm19).
