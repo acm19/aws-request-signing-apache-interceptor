@@ -1,4 +1,6 @@
 ### 4.0.1 (Next)
+
+* [#154](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/154): This is just a test - [@acm19](https://github.com/acm19).
 * [#153](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/153): Validate CHANGELOG generation - [@acm19](https://github.com/acm19).
 * [#151](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/151): Upgrade deprecated actions/create-release@v1 - [@dblock](https://github.com/dblock).
 * [#150](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/150): Fix pom.xml indentation inconsistencies - [@dblock](https://github.com/dblock).
