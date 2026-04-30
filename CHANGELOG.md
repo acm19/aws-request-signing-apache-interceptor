@@ -1,3 +1,5 @@
+### 4.0.2 (Next)
+
 ### 4.0.1 (2026/04/30)
 * [#160](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/160): Skip CHANGELOG validation for 'renovate[bot]' - [@acm19](https://github.com/acm19).
 * [#153](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/153): Validate CHANGELOG generation - [@acm19](https://github.com/acm19).
