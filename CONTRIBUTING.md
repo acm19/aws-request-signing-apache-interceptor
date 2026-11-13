@@ -48,7 +48,17 @@ Make sure that `mvn test` completes without errors.
 
 ## Integration Tests
 
-To run integration tests against real infrastructure you can easily deploy a working cluster following [these instructions](infra/README.md).
+With Docker running, execute the unit and integration tests against [AWS Emulator](https://github.com/aws/aws-emulator):
+
+```bash
+bash integration-tests/run.sh
+```
+
+The script builds the emulator image from AWS's latest Linux package (x86-64 or Arm), starts an isolated container on a random loopback port with authentication enabled and telemetry disabled, and removes the container and its temporary credentials when finished. The first run downloads the emulator package and base image. No AWS account or real credentials are needed; the tests explicitly use the emulator's generated credentials and trust only its certificate.
+
+The integration suite verifies signed S3 GET requests with encoded query parameters and DynamoDB POST requests with JSON payloads through Apache 4 and Apache 5 synchronous/asynchronous clients. It also checks that unsigned requests and signatures made with the correct access key but an incorrect secret are rejected. This verifies signature handling, not IAM policies or production security. CI runs unit and integration tests in separate jobs, using `bash integration-tests/run.sh -DskipUnitTests=true` to avoid repeating unit tests in the integration job. `mvn test` continues to run only unit tests.
+
+To run integration tests against real infrastructure, you can deploy a working cluster following [these instructions](infra/README.md).
 
 ## Write Documentation
 

@@ -1,4 +1,5 @@
 ### 4.0.2 (Next)
+* [#168](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/168): Add AWS Emulator integration tests for Apache 4 and Apache 5 synchronous/asynchronous clients - [@dblock](https://github.com/dblock).
 * [#160](https://github.com/acm19/aws-request-signing-apache-interceptor/pull/166): Add explicit gpg fingerprint - [@acm19](https://github.com/acm19).
 
 ### 4.0.1 (2026/04/30)
